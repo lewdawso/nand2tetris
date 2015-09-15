@@ -67,7 +67,7 @@ CHIP CPU {
 
     //ALU
     ALU(x=DOut, y=ALUin, zx=instruction[11], nx=instruction[10], zy=instruction[9], ny=instruction[8],
-        f=instruction[7], no=instruction[6], out=ALUout, zr=zrOut, ng=ngOut);
+        f=instruction[7], no=instruction[6], out=ALUout, out=outM, zr=zrOut, ng=ngOut);
 
     //Set the next instruction
     And(a=instruction[1], b=zrOut, out=jeq); //out=0
