@@ -51,6 +51,9 @@ CHIP CPU {
     Or(a=aInstruction, b=ALUtoA, out=loadA);
     ARegister(in=AInput, load=loadA, out=AOut);
 
+    //D register control
+    
+
     //If it's a c instruction - where do we store the output?
     //Check A register
     And(a=cInstruction, b=instruction[5], out=ALUtoA);
@@ -61,6 +64,10 @@ CHIP CPU {
 
     //A or M multiplexor
     Mux16(a=AOut, b=inM, sel=instruction[12], out=ALUin);
+
+    //ALU
+    ALU(x=DOut, y=ALUin, zx=instruction[11], nx=instruction[10], zy=instruction[9], ny=instruction[8],
+        f=instruction[7], no=instruction[6], out=ALUout, zr=zrOut, ng=ngOut);
 
     
     
