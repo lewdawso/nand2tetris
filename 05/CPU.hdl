@@ -40,4 +40,30 @@ CHIP CPU {
 
     PARTS:
     // Put your code here:
+
+    //Are we supplied with an a or c instruction?
+    cInstruction = instruction[15];
+    Not(in=instruction[15], out=aInstruction); 
+
+    //A register control
+    //if a instruction OR c instruction with output to A, load A register
+    Mux16(a=instruction, b=ALUout, sel=ALUtoA, out=AInput);
+    Or(a=aInstruction, b=ALUtoA, out=loadA);
+    ARegister(in=AInput, load=loadA, out=AOut);
+
+    //If it's a c instruction - where do we store the output?
+    //Check A register
+    And(a=cInstruction, b=instruction[5], out=ALUtoA);
+    //Check D register
+    And(a=cInstruction, b=instruction[4], out=ALUtoD);
+    //Check M[A]
+    And(a=cInstruction, b=instruction[3], out=writeM);
+
+    //A or M multiplexor
+    Mux16(a=AOut, b=inM, sel=instruction[12], out=ALUin);
+
+    
+    
+    
+    
 }
