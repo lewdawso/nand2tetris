@@ -42,7 +42,6 @@ CHIP CPU {
     // Put your code here:
 
     //Are we supplied with an a or c instruction?
-    cInstruction = instruction[15];
     Not(in=instruction[15], out=aInstruction); 
 
     //A register control
@@ -57,11 +56,11 @@ CHIP CPU {
 
     //If it's a c instruction - where do we store the output?
     //Check A register
-    And(a=cInstruction, b=instruction[5], out=ALUtoA);
+    And(a=instruction[15], b=instruction[5], out=ALUtoA);
     //Check D register
-    And(a=cInstruction, b=instruction[4], out=ALUtoD);
+    And(a=instruction[15], b=instruction[4], out=ALUtoD);
     //Check M[A]
-    And(a=cInstruction, b=instruction[3], out=writeM);
+    And(a=instruction[15], b=instruction[3], out=writeM);
 
     //A or M multiplexor
     Mux16(a=AOut, b=inM, sel=instruction[12], out=ALUin);
