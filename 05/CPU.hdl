@@ -52,6 +52,7 @@ CHIP CPU {
     ARegister(in=AInput, load=loadA, out=AOut);
 
     //D register control
+    DRegister(in=ALUout, load=ALUtoD, out=Dout)
     
 
     //If it's a c instruction - where do we store the output?
