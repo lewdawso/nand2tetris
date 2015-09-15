@@ -80,14 +80,5 @@ CHIP CPU {
     Or(a=jle, b=jgt, out=jump);
     And(a=instruction[15], b=jump, out=loadPC);
     Not(in=loadPC, out=incPC); //if not loading, need to increment PC
-    PC(in=Aout, load=loadPC, reset=reset, inc=incPC, out[0..14]=PCout);
-
-
-
-
-    
-    
-    
-    
-    
+    PC(in=Aout, load=loadPC, reset=reset, inc=incPC, out[0..14]=PCout);    
 }
