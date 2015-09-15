@@ -70,6 +70,22 @@ CHIP CPU {
     ALU(x=DOut, y=ALUin, zx=instruction[11], nx=instruction[10], zy=instruction[9], ny=instruction[8],
         f=instruction[7], no=instruction[6], out=ALUout, zr=zrOut, ng=ngOut);
 
+    //Set the next instruction
+    And(a=instruction[1], b=zrOut, out=jeq); //out=0
+    And(a=instruction[2], b=ngOut, out=jlt); //out<0
+    Or(a=zrOut, b=ngOut, out=ZeroOrNeg);
+    Not(in=ZeroOrNeg, out=positive);
+    And(a=instruction[0], b=positive, out=jgt); //out>0
+    Or(a=jeq, b=jlt, out=jle); out<=0
+    Or(a=jle, b=jgt, out=jump);
+    And(a=instruction[15], b=jump, out=loadPC);
+    Not(in=loadPC, out=incPC); //if not loading, need to increment PC
+    PC(in=Aout, load=loadPC, reset=reset, inc=incPC, out[0..14]=PCout);
+
+
+
+
+    
     
     
     
