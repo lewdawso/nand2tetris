@@ -1,4 +1,4 @@
-re('fs');
+fs = require('fs');
 var buffer = [];
 var binary = [];
 var empty = (1 << 16).toString(2).slice(1, 17);
@@ -11,7 +11,12 @@ function commandType(command) {
     }
 };
 
-//read file specified in the command line data = fs.readFileSync("test", "ascii"); //generate an array consisting of the commands buffer = data.split(/\n/); //split each line by commands and symbols for (var i=0; i<buffer.length; i++) {
+//read file specified in the command line 
+data = fs.readFileSync("test", "ascii"); 
+//generate an array consisting of the commands 
+buffer = data.split(/\n/); 
+//split each line by commands and symbols 
+for (var i=0; i<buffer.length; i++) {
     if (buffer[i][0] == "@") {
         buffer[i] = buffer[i].split(/(@)/);
     }
@@ -28,7 +33,10 @@ function commandType(command) {
 
 for (var i=0; i<buffer.length; i++) {
     command = commandType(buffer[i]);
-    if (command[0] == 
+    if (command[1] == 0) {
+        //horrible bit of logic to do bitwise OR 
+        command = (parseInt(command, 2) | buffer[i][1]).toString(2);
+    };   
     binary.push(command);
 };
 
