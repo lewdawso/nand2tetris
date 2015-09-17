@@ -93,10 +93,13 @@ for (var i=0; i<buffer.length; i++) {
         } else {
             binary = (parseInt(binary, 2) | compTable[buffer[i][2]]).toString(2);
         };
+    } else {
+        // ';' 
+        binary = (parseInt(binary, 2) | compTable[buffer[i][0]]).toString(2);
+        binary = (parseInt(binary, 2) | jumpTable[buffer[i][2]]).toString(2);
     };
     output.push(binary);
 };
-
-console.log(buffer);
+output = output.join("\n");
 console.log(output);
 
