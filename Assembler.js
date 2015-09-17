@@ -3,6 +3,23 @@ var buffer = [];
 var binary = [];
 var empty = (1 << 16).toString(2).slice(1, 17);
 
+var destTable = {
+            'M': 1 << 3,
+            'D': 1 << 4,
+            'A': 1 << 5
+};
+
+var jumpTable = {
+            'null': 0,
+            'JGT': 1,
+            'JEQ': 2,
+            'JGE': 3,
+            'JLT': 4,
+            'JNE': 5,
+            'JLE': 6,
+            'JMP': 7
+};
+
 function commandType(command) {
     if (command[0] == "@") {
         return (1 << 15).toString(2);
@@ -32,11 +49,14 @@ for (var i=0; i<buffer.length; i++) {
 //get rid of empty array at end of buffer //buffer.splice((buffer.length-1), 1);
 
 for (var i=0; i<buffer.length; i++) {
+    //a or c instruction, generate binary
     command = commandType(buffer[i]);
     if (command[1] == 0) {
-        //horrible bit of logic to do bitwise OR 
+        //1000000000000000 | number
         command = (parseInt(command, 2) | buffer[i][1]).toString(2);
-    };   
+    } else {
+    
+    }
     binary.push(command);
 };
 
