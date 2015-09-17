@@ -2,6 +2,7 @@ fs = require('fs');
 var buffer = [];
 var output = [];
 var empty = (1 << 16).toString(2).slice(1, 17);
+var path = process.argv[2];
 
 var destTable = {
             'M': 1 << 3,
@@ -101,5 +102,6 @@ for (var i=0; i<buffer.length; i++) {
     output.push(binary);
 };
 output = output.join("\n");
-console.log(output);
+var fd =fs.openSync(path + ".hack", "w");
+fs.write(fd, output);
 
