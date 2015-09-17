@@ -1,6 +1,6 @@
 fs = require('fs');
 var buffer = [];
-var binary = [];
+var output = [];
 var empty = (1 << 16).toString(2).slice(1, 17);
 
 var destTable = {
@@ -20,6 +20,27 @@ var jumpTable = {
             'JMP': 7
 };
 
+var compTable = {
+            '0':   42 << 6,  // 0000101010000000
+            '1':   63 << 6,  // 0000111111000000
+            '-1':  58 << 6,  // 0000111010000000
+            'D':   12 << 6,  // 0000001100000000
+            'A':   48 << 6,  // 0000110000000000
+            '!D':  13 << 6,  // 0000001101000000
+            '!A':  49 << 6,  // 0000110001000000
+            '-D':  15 << 6,  // 0000001111000000
+            '-A':  51 << 6,  // 0000110011000000
+            'D+1': 31 << 6,  // 0000011111000000
+            'A+1': 55 << 6,  // 0000110111000000
+            'D-1': 14 << 6,  // 0000001110000000
+            'A-1': 50 << 6,  // 0000110010000000
+            'D+A':  2 << 6,  // 0000000010000000
+            'D-A': 19 << 6,  // 0000010011000000
+            'A-D':  7 << 6,  // 0000000111000000
+            'D&A':  0 << 6,  // 0000000000000000
+            'D|A': 21 << 6,  // 0000010101000000
+};
+
 function commandType(command) {
     if (command[0] == "@") {
         return (1 << 15).toString(2);
@@ -37,29 +58,45 @@ for (var i=0; i<buffer.length; i++) {
     if (buffer[i][0] == "@") {
         buffer[i] = buffer[i].split(/(@)/);
     }
-    else {
-        buffer[i] = buffer[i].split(/([MDA])+=/);
-    };
+    else if (buffer[i][1] == "=") {
+        buffer[i] = buffer[i].split(/([MDA])+(=)/);
+    } else {
+        buffer[i] = buffer[i].split(/([MDA])+(;)/);
+};
     for (var j=0; j<buffer[i].length; j++) {
         if (buffer[i][j] == "") {
             buffer[i].splice(j, 1);
         };
     };
 };
-//get rid of empty array at end of buffer //buffer.splice((buffer.length-1), 1);
+buffer.splice((buffer.length-1), 1);
 
 for (var i=0; i<buffer.length; i++) {
     //a or c instruction, generate binary
-    command = commandType(buffer[i]);
-    if (command[1] == 0) {
+    binary = commandType(buffer[i]);
+    //if a instruction
+    if (binary[1] == 0) {
         //1000000000000000 | number
-        command = (parseInt(command, 2) | buffer[i][1]).toString(2);
-    } else {
-    
-    }
-    binary.push(command);
+        binary = (parseInt(binary, 2) | buffer[i][1]).toString(2);
+        output.push(binary);
+        continue;
+    };
+    if (buffer[i][1] == "=") {
+        //destination
+        binary = (parseInt(binary, 2) | destTable[buffer[i][0]]).toString(2);
+        //a-bit
+        if(buffer[i][2].indexOf('A') === -1) {
+            binary = (1 << 12 | parseInt(binary, 2)).toString(2);
+            //must contain M. Messy hack to grab the binary from the comp table
+            compute = (buffer[i][2]).replace(/M/g, "A");
+            binary = (parseInt(binary, 2) | compTable[compute]).toString(2);
+        } else {
+            binary = (parseInt(binary, 2) | compTable[buffer[i][2]]).toString(2);
+        };
+    };
+    output.push(binary);
 };
 
 console.log(buffer);
-console.log(binary);
+console.log(output);
 
