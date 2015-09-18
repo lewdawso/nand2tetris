@@ -69,7 +69,7 @@ for (var i=0; i<buffer.length; i++) {
     else if (buffer[i][1] == "=") {
         buffer[i] = buffer[i].split(/([MDA])+(=)/);
     } else {
-        buffer[i] = buffer[i].split(/([MDA])+(;)/);
+        buffer[i] = buffer[i].split(/([MDA01])+(;)/);
 };
     for (var j=0; j<buffer[i].length; j++) {
         if (buffer[i][j] == "") {
@@ -112,4 +112,3 @@ for (var i=0; i<buffer.length; i++) {
 output = output.join("\n");
 var fd =fs.openSync(path + ".hack", "w");
 fs.write(fd, output);
-
