@@ -44,10 +44,17 @@ var compTable = {
 
 function commandType(command) {
     if (command[0] == "@") {
-        return (1 << 15).toString(2);
+        return (0).toString(2);
     } else {
         return (7 << 13).toString(2);
     }
+};
+
+function pad(binary) {
+    while (binary.length < 16) {
+        binary = '0' + binary;
+    };
+    return binary;
 };
 
 //read file specified in the command line 
@@ -76,9 +83,10 @@ for (var i=0; i<buffer.length; i++) {
     //a or c instruction, generate binary
     binary = commandType(buffer[i]);
     //if a instruction
-    if (binary[1] == 0) {
+    if (binary[0] == 0) {
         //1000000000000000 | number
         binary = (parseInt(binary, 2) | buffer[i][1]).toString(2);
+        binary = pad(binary);
         output.push(binary);
         continue;
     };
@@ -86,7 +94,7 @@ for (var i=0; i<buffer.length; i++) {
         //destination
         binary = (parseInt(binary, 2) | destTable[buffer[i][0]]).toString(2);
         //a-bit
-        if(buffer[i][2].indexOf('A') === -1) {
+        if(buffer[i][2].indexOf('M') != -1) {
             binary = (1 << 12 | parseInt(binary, 2)).toString(2);
             //must contain M. Messy hack to grab the binary from the comp table
             compute = (buffer[i][2]).replace(/M/g, "A");
