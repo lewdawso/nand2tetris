@@ -68,9 +68,11 @@ for (var i=0; i<buffer.length; i++) {
     }
     else if (buffer[i][1] == "=") {
         buffer[i] = buffer[i].split(/([MDA])+(=)/);
-    } else {
+    } else if (buffer[i][1] == ";") {
         buffer[i] = buffer[i].split(/([MDA01])+(;)/);
-};
+    } else {
+        buffer[i] = buffer[i].split(/(\/)/);
+    };
     for (var j=0; j<buffer[i].length; j++) {
         if (buffer[i][j] == "") {
             buffer[i].splice(j, 1);
@@ -80,6 +82,10 @@ for (var i=0; i<buffer.length; i++) {
 buffer.splice((buffer.length-1), 1);
 
 for (var i=0; i<buffer.length; i++) {
+    //is the line a comment?
+    if (buffer[i][0] && buffer[i][1] == "/") {
+        continue;
+    };
     //a or c instruction, generate binary
     binary = commandType(buffer[i]);
     //if a instruction
@@ -112,3 +118,4 @@ for (var i=0; i<buffer.length; i++) {
 output = output.join("\n");
 var fd =fs.openSync(path + ".hack", "w");
 fs.write(fd, output);
+console.log(buffer);
