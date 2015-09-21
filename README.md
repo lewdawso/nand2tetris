@@ -1,3 +1,5 @@
 # nand2tetris
 
-Solutions for nand2tetris course
+Solutions for the nand2tetris course
+
+http://www.nand2tetris.org/
