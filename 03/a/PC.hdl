@@ -19,10 +19,10 @@ CHIP PC {
     Inc16(in=regout, out=incre);
     Mux8Way16(sel[0]=load, sel[1]=inc, sel[2]=reset, 
                                         a=regout,
-                                        b=in.
-                                        c=incre.
-                                        d=in.
-                                        e=false.
+                                        b=in,
+                                        c=incre,
+                                        d=in,
+                                        e=false,
                                         f=false,
                                         g=false,
                                         h=false,
