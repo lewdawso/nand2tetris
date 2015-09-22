@@ -86,6 +86,9 @@ for (var i=0; i<buffer.length; i++) {
     if (buffer[i][0] && buffer[i][1] == "/") {
         continue;
     };
+    if (buffer[i].length == 0) {
+        continue;
+    };
     //a or c instruction, generate binary
     binary = commandType(buffer[i]);
     //if a instruction
@@ -118,3 +121,4 @@ for (var i=0; i<buffer.length; i++) {
 output = output.join("\n");
 var fd =fs.openSync(path + ".hack", "w");
 fs.write(fd, output);
+console.log(output);
