@@ -16,11 +16,11 @@ CHIP PC {
     OUT out[16];
 
     PARTS:
-    Inc16(in=regout, out=inc);
+    Inc16(in=regout, out=incre);
     Mux8Way16(sel[0]=load, sel[1]=inc, sel[2]=reset, 
                                         a=regout,
                                         b=in.
-                                        c=inc.
+                                        c=incre.
                                         d=in.
                                         e=false.
                                         f=false,
