@@ -58,7 +58,7 @@ function pad(binary) {
 };
 
 //read file specified in the command line 
-data = fs.readFileSync("test", "ascii"); 
+data = fs.readFileSync(process.argv[2], "ascii"); 
 //generate an array consisting of the commands 
 buffer = data.split(/\n/); 
 //split each line by commands and symbols 
@@ -118,4 +118,3 @@ for (var i=0; i<buffer.length; i++) {
 output = output.join("\n");
 var fd =fs.openSync(path + ".hack", "w");
 fs.write(fd, output);
-console.log(output);
