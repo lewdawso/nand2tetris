@@ -57,6 +57,17 @@ function pad(binary) {
     return binary;
 };
 
+function containsEquals(array) {
+    var j=0;
+    while(j < array.length) {
+        if(array[j] === '=') {
+            return j;
+        }; 
+        j++;
+    };
+    return false;
+};
+
 //read file specified in the command line 
 data = fs.readFileSync(process.argv[2], "ascii"); 
 //generate an array consisting of the commands 
@@ -103,17 +114,20 @@ for (var i=0; i<buffer.length; i++) {
         output.push(binary);
         continue;
     };
-    if (buffer[i][1] == "=") {
+    var index = containsEquals(buffer[i]);
+    if (index != false) {
         //destination
-        binary = (parseInt(binary, 2) | destTable[buffer[i][0]]).toString(2);
+        for (var k=0; k<(index+1); k++) {
+            binary = (parseInt(binary, 2) | destTable[buffer[i][k]]).toString(2);
+        };
         //a-bit
-        if(buffer[i][2].indexOf('M') != -1) {
+        if((buffer[i][index+1]).indexOf('M') != -1) {
             binary = (1 << 12 | parseInt(binary, 2)).toString(2);
             //must contain M. Messy hack to grab the binary from the comp table
-            compute = (buffer[i][2]).replace(/M/g, "A");
+            compute = (buffer[i][index+1]).replace(/M/g, "A");
             binary = (parseInt(binary, 2) | compTable[compute]).toString(2);
         } else {
-            binary = (parseInt(binary, 2) | compTable[buffer[i][2]]).toString(2);
+            binary = (parseInt(binary, 2) | compTable[buffer[i][index+1]]).toString(2);
         };
     } else {
         // ';' 
