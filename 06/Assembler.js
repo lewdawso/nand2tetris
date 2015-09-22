@@ -139,3 +139,4 @@ for (var i=0; i<buffer.length; i++) {
 output = output.join("\n");
 var fd =fs.openSync(path + ".hack", "w");
 fs.write(fd, output);
+console.log(buffer);
