@@ -68,6 +68,10 @@ for (var i=0; i<buffer.length; i++) {
     }
     else if (buffer[i][1] == "=") {
         buffer[i] = buffer[i].split(/([MDA])+(=)/);
+    } else if (buffer[i][2] == "=") {
+        buffer[i] = buffer[i].split(/([MDA])+([MDA])+(=)/);
+    } else if (buffer[i][3] == "=") {
+        buffer[i] = buffer[i].split(/([MDA])+([MDA])+([MDA])+(=)/);
     } else if (buffer[i][1] == ";") {
         buffer[i] = buffer[i].split(/([MDA01])+(;)/);
     } else {
@@ -121,4 +125,3 @@ for (var i=0; i<buffer.length; i++) {
 output = output.join("\n");
 var fd =fs.openSync(path + ".hack", "w");
 fs.write(fd, output);
-console.log(output);
