@@ -89,7 +89,7 @@ function writeArithmetic(cmd) {
             break;
         case "neg":
             decrementRegister("SP");
-            setAtoSP();
+            AtoSP();
             write(["M=-M"]);
             incrementRegister("SP");
             break;
@@ -100,14 +100,14 @@ function writeArithmetic(cmd) {
             write(["D;JNE"]);
             write(["@1"]);
             write(["D=A"]);
-            setAtoSP();
+            AtoSP();
             write(["M=D"]);
             write(["@"+label2]);
             write(["0;JMP"]);
             write(["("+label1+")"]);
             write(["@0"]);
             write(["D=A"]);
-            setAtoSP();
+            AtoSP();
             write(["M=D"]);
             write(["("+label2+")"]);
             incrementRegister("SP");
@@ -119,14 +119,14 @@ function writeArithmetic(cmd) {
             write(["D;JGT"]);
             write(["@1"]);
             write(["D=A"]);
-            setAtoSP();
+            AtoSP();
             write(["M=D"]);
             write(["@"+label2]);
             write(["0;JMP"]);
             write(["("+label1+")"]);
             write(["@0"]);
             write(["D=A"]);
-            setAtoSP();
+            AtoSP();
             write(["M=D"]);
             write(["("+label2+")"]);
             incrementRegister("SP");
@@ -138,14 +138,14 @@ function writeArithmetic(cmd) {
             write(["D;JLT"]);
             write(["@1"]);
             write(["D=A"]);
-            setAtoSP();
+            AtoSP();
             write(["M=D"]);
             write(["@"+label2]);
             write(["0;JMP"]);
             write(["("+label1+")"]);
             write(["@0"]);
             write(["D=A"]);
-            setAtoSP();
+            AtoSP();
             write(["M=D"]);
             write(["("+label2+")"]);
             incrementRegister("SP");
@@ -162,31 +162,68 @@ function writeArithmetic(cmd) {
             break;
         case "not":
             decrementRegister("SP");
-            setAtoSP();
+            AtoSP();
             write(["M=!M"]);
             incrementRegister("SP");
             break;
     };
 };
 
-function writePushPop(command, cmdType) {
+function writePushPop(cmdType, register, index) {
    switch (cmdType) {
         case "C_PUSH":
-            write(["@" + arg2(command)]);
-            write(["D=A"]);   
-            setAtoSP();
-            write(["M=D"]);
-            incrementRegister("SP");
-            break;
+            switch(register) {
+                case "constant":
+                    write(["@" + index]);
+                    write(["D=A"]);   
+                    AtoSP();
+                    write(["M=D"]);
+                    incrementRegister("SP");
+                    break;
+                case "local":
+                    reg2Stack("LCL", index)
+                    break;
+                case "argument":
+                    reg2Stack("ARG", index);
+                    break;
+                case "this":
+                    reg2Stack("THIS", index);
+                    break;
+                case "that":
+                    reg2Stack("THAT", index);
+                    break;
+        };
+        case "C_POP":
+            decrementRegister("SP");
+            AtoSP();
+            write(["D=M"]);
     };
 };
 
 function getTop2Stack() {
     decrementRegister("SP");
-    setAtoSP();
+    AtoSP();
     write(["D=M"]);
     decrementRegister("SP");
-    setAtoSP();
+    AtoSP();
+};
+
+function reg2Stack(register, index) {
+    write(["@"+index]);
+    write(["D=A"]);
+    AtoReg(register);
+    write(["A=D+A"]);
+    write(["D=M"]);
+    AtoSP();
+    write(["M=D"]);
+    incrementRegister("SP");
+}
+
+function stack2Reg(register) {
+    decrementRegister("SP");
+    AtoSP();
+    write(["D=M"]);
+    //working from here!!
 };
 
 function decrementRegister(register) {
@@ -194,8 +231,13 @@ function decrementRegister(register) {
     write(["M=M-1"]);
 };
 
-function setAtoSP() {
+function AtoSP() {
     write(["@SP"]);
+    write(["A=M"]);
+};
+
+function AtoReg(register) {
+    write(["@"+register]);
     write(["A=M"]);
 };
 
@@ -221,7 +263,7 @@ function main() {
         if (cmdType == "C_ARITHMETIC") {
             writeArithmetic(command);
         } else if (cmdType == ("C_PUSH" || "C_POP")) {
-            writePushPop(command, cmdType);
+            writePushPop(cmdType, arg1(command), arg2(command));
         };
     };
     genOutFile()
