@@ -204,6 +204,13 @@ function incrementRegister(register) {
     write(["M=M+1"]);
 };
 
+function genOutFile() {
+    asm = asm.join("\n");
+    path = path.split(".");
+    fd = fs.openSync(path[0] + ".asm", "w");
+    fs.write(fd, asm);
+};
+
 function main() {
     data=fs.readFileSync(path, "ascii");
     buffer = data.split(/\n/);
@@ -217,7 +224,7 @@ function main() {
             writePushPop(command, cmdType);
         };
     };
+    genOutFile()
 };
 
 main();
-console.log(asm.join("\n"));
