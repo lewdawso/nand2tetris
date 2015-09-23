@@ -88,7 +88,7 @@ function writeArithmetic(cmd) {
             incrementRegister("SP");
             break;
         case "neg":
-            decerementRegister("SP");
+            decrementRegister("SP");
             setAtoSP();
             write(["M=-M"]);
             incrementRegister("SP");
