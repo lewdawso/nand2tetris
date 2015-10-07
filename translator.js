@@ -105,8 +105,8 @@ function writeArithmetic(cmd) {
             write(["D=D-M"]);
             write(["@"+label1]);
             write(["D;JNE"]);
-            write(["@-1"]);
-            write(["D=A"]);
+            write(["@1"]);
+            write(["D=-A"]);
             AtoSP();
             write(["M=D"]);
             write(["@"+label2]);
@@ -124,8 +124,8 @@ function writeArithmetic(cmd) {
             write(["D=M-D"]);
             write(["@"+label1]);
             write(["D;JLT"]);
-            write(["@-1"]);
-            write(["D=A"]);
+            write(["@1"]);
+            write(["D=-A"]);
             AtoSP();
             write(["M=D"]);
             write(["@"+label2]);
@@ -143,8 +143,8 @@ function writeArithmetic(cmd) {
             write(["D=M-D"]);
             write(["@"+label1]);
             write(["D;JGT"]);
-            write(["@-1"]);
-            write(["D=A"]);
+            write(["@1"]);
+            write(["D=-A"]);
             AtoSP();
             write(["M=D"]);
             write(["@"+label2]);
