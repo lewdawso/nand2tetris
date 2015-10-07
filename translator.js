@@ -192,6 +192,9 @@ function writePushPop(cmdType, register, index) {
                 case "that":
                     reg2Stack("THAT", index);
                     break;
+                case "temp":
+                    reg2Stack("R5", index);
+                    break;
         };
         case "C_POP":
             decrementRegister("SP");
