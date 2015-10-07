@@ -219,7 +219,7 @@ function writePushPop(cmdType, register, index) {
                     stack2Reg("THAT", index);
                     break; 
                 case "temp":
-                    stack2Reg("THAT", index);
+                    stack2Reg("TEMP", index);
                     break;
         };
             break;
