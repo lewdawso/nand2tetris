@@ -249,10 +249,11 @@ function stack2Reg(register, index) {
     //get memory address where you need to store the 'pop'
     write(["@"+index]);
     write(["D=A"]);
-    write(["@"+register]);
-    if (register == "THAT") {
+    if (register == "TEMP") {
+        write(["@R5"])
         write(["D=D+A"]);
     } else {
+        write("@"+register);
         write(["D=D+M"]);
     };
     //store this in temp
