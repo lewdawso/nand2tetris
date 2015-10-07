@@ -48,7 +48,7 @@ function arg1(cmd) {
 };
 
 function arg2(cmd) {
-    if (commandType(cmd[0]) == ("C_PUSH" || "C_POP" || "C_FUNCTION" || "C_CALL")) {
+    if (commandType(cmd[0]) == "C_PUSH" || "C_POP" || "C_FUNCTION" || "C_CALL") {
         return cmd[2];
     };
 };
@@ -306,7 +306,7 @@ function main() {
         var cmdType = commandType(command[0]);
         if (cmdType == "C_ARITHMETIC") {
             writeArithmetic(command);
-        } else {
+        } else if (cmdType == "C_POP" || "C_PUSH") {
             writePushPop(cmdType, arg1(command), arg2(command));
         };
     };
