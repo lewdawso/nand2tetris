@@ -6,10 +6,10 @@ M=D
 @SP
 M=M+1
 @SP
+M=M-1
+@SP
 A=M
 D=M
-@SP
-M=M-1
 @THIS
 M=D
 @3040
@@ -20,10 +20,10 @@ M=D
 @SP
 M=M+1
 @SP
+M=M-1
+@SP
 A=M
 D=M
-@SP
-M=M-1
 @THAT
 M=D
 @32
