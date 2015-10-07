@@ -204,9 +204,6 @@ function writePushPop(cmdType, register, index) {
                     break;
         };
         case "C_POP":
-            decrementRegister("SP");
-            AtoSP();
-            write(["D=M"]);
             switch(register) {
                 case "local":
                     stack2Reg("LCL", index);
