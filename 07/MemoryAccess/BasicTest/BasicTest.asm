@@ -133,8 +133,8 @@ M=D
 M=M+1
 @6
 D=A
-@THAT
-D=D+A
+@TEMP
+D=D+M
 @R13
 M=D
 @SP
