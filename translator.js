@@ -105,7 +105,7 @@ function writeArithmetic(cmd) {
             write(["D=D-M"]);
             write(["@"+label1]);
             write(["D;JNE"]);
-            write(["@1"]);
+            write(["@-1"]);
             write(["D=A"]);
             AtoSP();
             write(["M=D"]);
