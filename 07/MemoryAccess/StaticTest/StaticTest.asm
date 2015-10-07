@@ -21,7 +21,7 @@ M=D
 M=M+1
 @168
 D=A
-@R16
+@16
 D=D+A
 @R13
 M=D
@@ -35,7 +35,7 @@ A=M
 M=D
 @163
 D=A
-@R16
+@16
 D=D+A
 @R13
 M=D
@@ -49,7 +49,7 @@ A=M
 M=D
 @161
 D=A
-@R16
+@16
 D=D+A
 @R13
 M=D
@@ -63,10 +63,9 @@ A=M
 M=D
 @3
 D=A
-@R16
+@16
 A=M
-A=D+A
-D=M
+D=D+A
 @SP
 A=M
 M=D
@@ -74,10 +73,9 @@ M=D
 M=M+1
 @1
 D=A
-@R16
+@16
 A=M
-A=D+A
-D=M
+D=D+A
 @SP
 A=M
 M=D
@@ -97,10 +95,9 @@ M=M-D
 M=M+1
 @8
 D=A
-@R16
+@16
 A=M
-A=D+A
-D=M
+D=D+A
 @SP
 A=M
 M=D
