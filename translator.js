@@ -218,6 +218,9 @@ function writePushPop(cmdType, register, index) {
                 case "that":
                     stack2Reg("THAT", index);
                     break; 
+                case "temp":
+                    stack2Reg("THAT", index);
+                    break;
         };
             break;
     };
@@ -247,7 +250,11 @@ function stack2Reg(register, index) {
     write(["@"+index]);
     write(["D=A"]);
     write(["@"+register]);
-    write(["D=D+M"]);
+    if (register == "THAT") {
+        write(["D=D+A"]);
+    } else {
+        write(["D=D+M"]);
+    };
     //store this in temp
     write(["@R13"]);
     write(["M=D"]);
