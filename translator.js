@@ -121,10 +121,10 @@ function writeArithmetic(cmd) {
             break;
         case "gt":
             getTop2Stack();
-            write(["D=D-M"]);
+            write(["D=M-D"]);
             write(["@"+label1]);
-            write(["D;JGT"]);
-            write(["@1"]);
+            write(["D;JLT"]);
+            write(["@-1"]);
             write(["D=A"]);
             AtoSP();
             write(["M=D"]);
@@ -140,10 +140,10 @@ function writeArithmetic(cmd) {
             break;
         case "lt":
             getTop2Stack();
-            write(["D=D-M"]);
+            write(["D=M-D"]);
             write(["@"+label1]);
-            write(["D;JLT"]);
-            write(["@1"]);
+            write(["D;JGT"]);
+            write(["@-1"]);
             write(["D=A"]);
             AtoSP();
             write(["M=D"]);
