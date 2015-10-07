@@ -13,7 +13,14 @@ var commands = {"add":"C_ARITHMETIC",
                 "and":"C_ARITHMETIC",
                 "or":"C_ARITHMETIC",
                 "not":"C_ARITHMETIC",
-                "push":"C_PUSH"
+                "push":"C_PUSH",
+                "pop":"C_POP",
+                "label":"C_LABEL",
+                "goto":"C_GOTO",
+                "if":"C_IF",
+                "function":"C_FUNCTION",
+                "return":"C_RETURN",
+                "call":"C_CALL"
                 };
 
 function isComment(command) {
@@ -193,13 +200,27 @@ function writePushPop(cmdType, register, index) {
                     reg2Stack("THAT", index);
                     break;
                 case "temp":
-                    reg2Stack("R5", index);
+                    temp2Stack(index);
                     break;
         };
         case "C_POP":
             decrementRegister("SP");
             AtoSP();
             write(["D=M"]);
+            switch(register) {
+                case "local":
+                    stack2Reg("LCL", index);
+                    break;
+                case "argument":
+                    stack2Reg("ARG", index);
+                    break;
+                case "this":
+                    stack2Reg("THIS", index);
+                    break;
+                case "that":
+                    stack2Reg("THAT", index);
+                    break; 
+        };
     };
 };
 
@@ -222,11 +243,32 @@ function reg2Stack(register, index) {
     incrementRegister("SP");
 }
 
-function stack2Reg(register) {
+function stack2Reg(register, index) {
+    //get memory address where you need to store the 'pop'
+    write(["@"+index]);
+    write(["D=A"]);
+    write(["@"+register]);
+    write("D=D+M");
+    //store this in temp
+    write(["@R13"]);
+    write(["M=D"]);
     decrementRegister("SP");
     AtoSP();
     write(["D=M"]);
-    //working from here!!
+    write(["@R13"]);
+    write(["A=M"]); 
+    write(["M=D"]);
+};
+
+function temp2Stack(index) {
+    write(["@"+index]);
+    write(["D=A"]);
+    write("@R5");
+    write("A=A+D");
+    write("D=M") ;
+    AtoSP();
+    write(["M=D"]);
+    incrementRegister("SP");
 };
 
 function decrementRegister(register) {
