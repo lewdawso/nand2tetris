@@ -99,7 +99,7 @@ M=M+1
 @5
 D=A
 @THAT
-D=D+A
+D=D+M
 @R13
 M=D
 @SP
@@ -113,7 +113,7 @@ M=D
 @2
 D=A
 @THAT
-D=D+A
+D=D+M
 @R13
 M=D
 @SP
@@ -133,8 +133,8 @@ M=D
 M=M+1
 @6
 D=A
-@TEMP
-D=D+M
+@R5
+D=D+A
 @R13
 M=D
 @SP
