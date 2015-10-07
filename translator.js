@@ -202,6 +202,20 @@ function writePushPop(cmdType, register, index) {
                 case "temp":
                     temp2Stack(index);
                     break;
+                case "pointer":
+                    if (index == 0) {
+                        write(["@THIS"]);
+                        write(["D=M"]);
+                        AtoSP();
+                        write(["M=D"]);
+                        incrementRegister("SP");
+                    } else if (index == 1) {
+                        write(["@THAT"]);
+                        write(["D=M"]);
+                        AtoSP();
+                        write(["M=D"])
+                        incrementRegister("SP");
+                    };
         };
             break;
         case "C_POP":
@@ -221,6 +235,20 @@ function writePushPop(cmdType, register, index) {
                 case "temp":
                     stack2Reg("TEMP", index);
                     break;
+                case "pointer":
+                    if (index == 0) {
+                        decrementRegister("SP");
+                        AtoSP();
+                        write(["D=M"]);
+                        write(["@THIS"]);
+                        write(["M=D"]);
+                    } else if (index == 1) {
+                        decrementRegister("SP");
+                        AtoSP();
+                        write("D=M")
+                        write(["@THAT"]);
+                        write("M=D");
+                    };
         };
             break;
     };
