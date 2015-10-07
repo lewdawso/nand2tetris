@@ -203,6 +203,7 @@ function writePushPop(cmdType, register, index) {
                     temp2Stack(index);
                     break;
         };
+            break;
         case "C_POP":
             switch(register) {
                 case "local":
@@ -218,6 +219,7 @@ function writePushPop(cmdType, register, index) {
                     stack2Reg("THAT", index);
                     break; 
         };
+            break;
     };
 };
 
@@ -302,10 +304,9 @@ function main() {
     for (var k=0; k<output.length; k++) {
         command = output[k];
         var cmdType = commandType(command[0]);
-        console.log(cmdType);
         if (cmdType == "C_ARITHMETIC") {
             writeArithmetic(command);
-        } else if (cmdType == ("C_PUSH" || "C_POP")) {
+        } else {
             writePushPop(cmdType, arg1(command), arg2(command));
         };
     };
