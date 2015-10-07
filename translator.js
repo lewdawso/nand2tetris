@@ -245,7 +245,7 @@ function stack2Reg(register, index) {
     write(["@"+index]);
     write(["D=A"]);
     write(["@"+register]);
-    write("D=D+M");
+    write(["D=D+M"]);
     //store this in temp
     write(["@R13"]);
     write(["M=D"]);
@@ -301,7 +301,8 @@ function main() {
     parse();
     for (var k=0; k<output.length; k++) {
         command = output[k];
-        var cmdType = commandType(command[0])
+        var cmdType = commandType(command[0]);
+        console.log(cmdType);
         if (cmdType == "C_ARITHMETIC") {
             writeArithmetic(command);
         } else if (cmdType == ("C_PUSH" || "C_POP")) {
