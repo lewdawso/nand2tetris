@@ -123,7 +123,7 @@ function writeArithmetic(cmd) {
             getTop2Stack();
             write(["D=M-D"]);
             write(["@"+label1]);
-            write(["D;JLT"]);
+            write(["D;JLE"]);
             write(["@1"]);
             write(["D=-A"]);
             AtoSP();
@@ -142,7 +142,7 @@ function writeArithmetic(cmd) {
             getTop2Stack();
             write(["D=M-D"]);
             write(["@"+label1]);
-            write(["D;JGT"]);
+            write(["D;JGE"]);
             write(["@1"]);
             write(["D=-A"]);
             AtoSP();
