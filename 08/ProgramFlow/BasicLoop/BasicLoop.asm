@@ -23,6 +23,7 @@ D=M
 @R13
 A=M
 M=D
+(LOOP_START)
 @0
 D=A
 @ARG
@@ -126,6 +127,11 @@ A=M
 M=D
 @SP
 M=M+1
+@SP
+A=M
+D=M
+@LOOP_START
+D;JNE
 @0
 D=A
 @LCL
