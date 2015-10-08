@@ -18,7 +18,7 @@ var commands = {"add":"C_ARITHMETIC",
                 "pop":"C_POP",
                 "label":"C_LABEL",
                 "goto":"C_GOTO",
-                "if":"C_IF",
+                "if-goto":"C_IF",
                 "function":"C_FUNCTION",
                 "return":"C_RETURN",
                 "call":"C_CALL"
@@ -275,6 +275,18 @@ function writeInit() {
     write(["M=D"]);
 };
 
+function writeGoto(label) {
+    write(["@"+label]);
+    write(["0;JMP"]);
+};
+
+function writeIf(label) {
+    AtoSP();
+    write(["D=M"]);
+    write(["@"+label]);
+    write(["D;JNE"]);
+};
+
 function getTop2Stack() {
     decrementRegister("SP");
     AtoSP();
@@ -369,6 +381,10 @@ function main() {
             writeArithmetic(command);
         } else if (cmdType == "C_POP" || "C_PUSH") {
             writePushPop(cmdType, arg1(command), arg2(command));
+        } else if (cmdType == "C_GOTO") {
+            writeGoto(arg1(command));
+        } else if (cmdType == "C_IF") {
+            writeIf(arg1(command));
         };
     };
     genOutFile()
