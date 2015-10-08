@@ -64,7 +64,8 @@ M=D
 @3
 D=A
 @R16
-D=D+A
+A=D+A
+D=M
 @SP
 A=M
 M=D
@@ -73,7 +74,8 @@ M=M+1
 @1
 D=A
 @R16
-D=D+A
+A=D+A
+D=M
 @SP
 A=M
 M=D
@@ -94,7 +96,8 @@ M=M+1
 @8
 D=A
 @R16
-D=D+A
+A=D+A
+D=M
 @SP
 A=M
 M=D
