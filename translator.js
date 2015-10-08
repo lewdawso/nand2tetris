@@ -268,6 +268,13 @@ function writePushPop(cmdType, register, index) {
     };
 };
 
+function writeInit() {
+    write(["@256"]);
+    write(["D=M"]);
+    write(["@SP"]);
+    write(["M=D"]);
+};
+
 function getTop2Stack() {
     decrementRegister("SP");
     AtoSP();
@@ -351,6 +358,7 @@ function genOutFile() {
 };
 
 function main() {
+    writeInit();
     data=fs.readFileSync(path, "ascii");
     buffer = data.split(/\n/);
     parse();
