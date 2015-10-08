@@ -270,7 +270,7 @@ function writePushPop(cmdType, register, index) {
 
 function writeInit() {
     write(["@256"]);
-    write(["D=M"]);
+    write(["D=A"]);
     write(["@SP"]);
     write(["M=D"]);
 };
@@ -281,6 +281,7 @@ function writeGoto(label) {
 };
 
 function writeIf(label) {
+    decrementRegister("SP");
     AtoSP();
     write(["D=M"]);
     write(["@"+label]);
@@ -383,7 +384,7 @@ function main() {
         var cmdType = commandType(command[0]);
         if (cmdType == "C_ARITHMETIC") {
             writeArithmetic(command);
-        } else if (cmdType == "C_POP" || "C_PUSH") {
+        } else if ((cmdType == "C_POP") || (cmdType == "C_PUSH")) {
             writePushPop(cmdType, arg1(command), arg2(command));
         } else if (cmdType == "C_GOTO") {
             writeGoto(arg1(command));
