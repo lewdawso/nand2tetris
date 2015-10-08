@@ -287,6 +287,10 @@ function writeIf(label) {
     write(["D;JNE"]);
 };
 
+function writeLabel(label) {
+    write(["("+label+")"]);
+};
+
 function getTop2Stack() {
     decrementRegister("SP");
     AtoSP();
@@ -385,6 +389,8 @@ function main() {
             writeGoto(arg1(command));
         } else if (cmdType == "C_IF") {
             writeIf(arg1(command));
+        } else if (cmdType == "C_LABEL") {
+            writeLabel(arg1(command));
         };
     };
     genOutFile()
