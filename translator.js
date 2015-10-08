@@ -3,6 +3,7 @@ var buffer = [];
 var output = [];
 var asm = [];
 var path = process.argv[2];
+var staticOffset = 16;
 
 var commands = {"add":"C_ARITHMETIC",
                 "sub":"C_ARITHMETIC",
@@ -216,6 +217,15 @@ function writePushPop(cmdType, register, index) {
                         write(["M=D"])
                         incrementRegister("SP");
                     };
+                case "static":
+                    write(["@"+index]);
+                    write(["D=A"]);
+                    write("@R16");
+                    write(["A=D+A"]);
+                    write(["D=M"]);
+                    AtoSP();
+                    write(["M=D"]);
+                    incrementRegister("SP");
         };
             break;
         case "C_POP":
@@ -249,6 +259,10 @@ function writePushPop(cmdType, register, index) {
                         write(["@THAT"]);
                         write("M=D");
                     };
+                    break;
+                case "static":
+                    stack2Reg("STATIC", index);
+                    break;
         };
             break;
     };
@@ -279,6 +293,9 @@ function stack2Reg(register, index) {
     write(["D=A"]);
     if (register == "TEMP") {
         write(["@R5"])
+        write(["D=D+A"]);
+    } else if (register == "STATIC") {
+        write("@R16");
         write(["D=D+A"]);
     } else {
         write("@"+register);
