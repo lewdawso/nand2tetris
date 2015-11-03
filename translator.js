@@ -293,6 +293,18 @@ function writeLabel(label) {
     write(["("+label+")"]);
 };
 
+function writeFunction(name, locals) {
+    writeLabel(name);
+    AtoSP();
+    for(var i=0; i<locals; i++) {
+        write(["M=0"]);
+        write(["A=A+1"]);
+    }
+    write(["D=A"]);
+    write(["@SP"]);
+    write(["M=D"]);
+};
+
 function getTop2Stack() {
     decrementRegister("SP");
     AtoSP();
@@ -393,6 +405,8 @@ function main() {
             writeIf(arg1(command));
         } else if (cmdType == "C_LABEL") {
             writeLabel(arg1(command));
+        }  else if (cmdType == "C_FUNCTION") {
+            writeFunction(arg1(command), arg2(command));
         };
     };
     genOutFile()
