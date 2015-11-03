@@ -273,7 +273,7 @@ function writeInit() {
     write(["D=A"]);
     write(["@SP"]);
     write(["M=D"]);
-    write(["call Sys.init 0"])
+    write(["p.CALL('Sys.init', '0')"]);
 };
 
 function writeGoto(label) {
