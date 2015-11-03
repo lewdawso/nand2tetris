@@ -2,7 +2,6 @@
 D=A
 @SP
 M=D
-p.CALL('Sys.init', '0')
 (SimpleFunction.test)
 @SP
 A=M
