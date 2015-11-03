@@ -2,6 +2,7 @@
 D=A
 @SP
 M=D
+call Sys.init 0
 @1
 D=A
 @ARG
