@@ -4,6 +4,7 @@ var output = [];
 var asm = [];
 var path = process.argv[2];
 var staticOffset = 16;
+var count = 0;
 
 var commands = {"add":"C_ARITHMETIC",
                 "sub":"C_ARITHMETIC",
@@ -304,6 +305,49 @@ function writeFunction(name, locals) {
     write(["M=D"]);
 };
 
+function writeCall(functionName, numArgs) {
+    var returnLabel = "return."+ functionName + "." + count;
+    count++;
+    //push label
+    write(["@"+returnLabel]);
+    write(["D=A"]);
+    AtoSP();
+    write(["M=D"]);
+    incrementRegister("SP");
+    //save states
+    saveState("LCL");
+    saveState("ARG");
+    saveState("THIS");
+    saveState("THAT");
+    //new value for ARG
+    decrementRegister("SP");
+    write(["@SP"]);
+    write(["D=M"]);
+    write(["@5"]);
+    write(["D=D-A"]);
+    write(["@"+numArgs]);
+    write(["D=D-A"]);
+    write(["@ARG"]);
+    write(["M=D"]);
+    //LCL=SP
+    write(["@SP"]);
+    write(["D=M"]);
+    write(["@LCL"]);
+    write(["M=D"]);
+    incrementRegister("SP");
+    writeGoto(functionName);
+    writeLabel(returnLabel);
+};
+
+function saveState(register) {
+    decrementRegister("SP");
+    write(["@" + register]);
+    write(["D=M"]);
+    AtoSP();
+    write(["M=D"]);
+    incremenetRegister("SP");
+};
+
 function getTop2Stack() {
     decrementRegister("SP");
     AtoSP();
@@ -406,7 +450,11 @@ function main() {
             writeLabel(arg1(command));
         }  else if (cmdType == "C_FUNCTION") {
             writeFunction(arg1(command), arg2(command));
-        };
+        } else if (cmdType == "C_CALL") {
+	        writeCall(arg1(command), arg2(command));
+	    } else if (cmdType == "C_RETURN") {
+            writeReturn();
+        }
     };
     genOutFile()
 };
