@@ -5,6 +5,8 @@ var asm = [];
 var path = process.argv[2];
 var staticOffset = 16;
 var count = 0;
+var FRAME = "R5";
+var RET = "R6";
 
 var commands = {"add":"C_ARITHMETIC",
                 "sub":"C_ARITHMETIC",
@@ -338,6 +340,52 @@ function writeCall(functionName, numArgs) {
     writeGoto(functionName);
     writeLabel(returnLabel);
 };
+
+function writeReturn() {
+    //FRAME = LCL
+    write(["@LCL"]);
+    write(["D=M"]);
+    write(["@"+FRAME]);
+    write(["M=D"]);
+    //RET = *(FRAME-5)
+    write(["@5"]);
+    write(["D=D-A"]);
+    write(["@"+RET]);
+    write(["M=D"]);
+    //*ARG = pop()
+    stack2Reg("ARG", 0);
+    //SP = ARG + 1
+    write(["@ARG"]);
+    write(["D=M"]);
+    write(["@1"]);
+    write(["D=D+A"]);
+    write(["@SP"]);
+    write(['M=D']);
+    //return states
+    write(["@"+FRAME]);
+    write(["D=M"]);
+    write(["@1"]);
+    write(["D=D-A"]);
+    write(["@THAT"]);
+    write(["M=D"]);
+    write(["@1"]);
+    write(["D=D-A"])
+    write(["@THIS"]
+    write(["M=D"]));
+    write(["@1"]);
+    write(["D=D-A"])
+    write(["@ARG"]
+    write(["M=D"]));
+    write(["@1"]);
+    write(["D=D-A"])
+    write(["@LCL"]
+    write(["M=D"]));
+    //goto RET
+    write(["@"+RET]);
+    write(["A=M"]);
+    write(["A=M"]);
+    write(["0;JMP"]);
+}
 
 function saveState(register) {
     decrementRegister("SP");
