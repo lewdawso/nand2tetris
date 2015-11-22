@@ -370,17 +370,17 @@ function writeReturn() {
     write(["@THAT"]);
     write(["M=D"]);
     write(["@1"]);
-    write(["D=D-A"])
-    write(["@THIS"]
-    write(["M=D"]));
+    write(["D=D-A"]);
+    write(["@THIS"]);
+    write(["M=D"]);
     write(["@1"]);
-    write(["D=D-A"])
-    write(["@ARG"]
-    write(["M=D"]));
+    write(["D=D-A"]);
+    write(["@ARG"]);
+    write(["M=D"]);
     write(["@1"]);
-    write(["D=D-A"])
-    write(["@LCL"]
-    write(["M=D"]));
+    write(["D=D-A"]);
+    write(["@LCL"]);
+    write(["M=D"]);
     //goto RET
     write(["@"+RET]);
     write(["A=M"]);
@@ -394,7 +394,7 @@ function saveState(register) {
     write(["D=M"]);
     AtoSP();
     write(["M=D"]);
-    incremenetRegister("SP");
+    incrementRegister("SP");
 };
 
 function getTop2Stack() {
