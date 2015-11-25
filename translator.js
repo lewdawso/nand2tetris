@@ -326,7 +326,6 @@ function writeCall(functionName, numArgs) {
     saveState("THIS");
     saveState("THAT");
     //new value for ARG
-    decrementRegister("SP");
     write(["@SP"]);
     write(["D=M"]);
     write(["@5"]);

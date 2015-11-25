@@ -38,8 +38,6 @@ M=D
 @SP
 M=M+1
 @SP
-M=M-1
-@SP
 D=M
 @5
 D=D-A
