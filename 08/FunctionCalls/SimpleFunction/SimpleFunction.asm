@@ -102,11 +102,11 @@ M=M-D
 M=M+1
 @LCL
 D=M
-@R5
+@R6
 M=D
 @5
 D=D-A
-@R6
+@R7
 M=D
 @0
 D=A
@@ -128,7 +128,7 @@ D=M
 D=D+A
 @SP
 M=D
-@R5
+@R6
 D=M
 @1
 D=D-A
@@ -146,7 +146,7 @@ M=D
 D=D-A
 @LCL
 M=D
-@R6
+@R7
 A=M
 A=M
 0;JMP
