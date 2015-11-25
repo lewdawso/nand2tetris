@@ -220,6 +220,7 @@ function writePushPop(cmdType, register, index) {
                         write(["M=D"])
                         incrementRegister("SP");
                     };
+                    break;
                 case "static":
                     write(["@"+index]);
                     write(["D=A"]);
@@ -229,6 +230,7 @@ function writePushPop(cmdType, register, index) {
                     AtoSP();
                     write(["M=D"]);
                     incrementRegister("SP");
+                    break;
         };
             break;
         case "C_POP":
@@ -276,7 +278,7 @@ function writeInit() {
     write(["D=A"]);
     write(["@SP"]);
     write(["M=D"]);
-    writeCall("Sys.init", 0);
+    //writeCall("Sys.init", 0);
 };
 
 function writeGoto(label) {
@@ -389,7 +391,6 @@ function writeReturn() {
 }
 
 function saveState(register) {
-    decrementRegister("SP");
     write(["@" + register]);
     write(["D=M"]);
     AtoSP();
