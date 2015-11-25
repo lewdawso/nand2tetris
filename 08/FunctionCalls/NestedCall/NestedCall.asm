@@ -201,15 +201,15 @@ M=D
 M=M+1
 @LCL
 D=M
-@R5
+@R7
 M=D
-@R5
+@R7
 D=M
 @5
 D=D-A
 A=D
 D=M
-@R6
+@R8
 M=D
 @SP
 M=M-1
@@ -225,7 +225,7 @@ D=M
 D=D+A
 @SP
 M=D
-@R5
+@R7
 D=M
 @1
 D=D-A
@@ -233,7 +233,7 @@ A=D
 D=M
 @THAT
 M=D
-@R5
+@R7
 D=M
 @2
 D=D-A
@@ -241,7 +241,7 @@ A=D
 D=M
 @THIS
 M=D
-@R5
+@R7
 D=M
 @3
 D=D-A
@@ -249,7 +249,7 @@ A=D
 D=M
 @ARG
 M=D
-@R5
+@R7
 D=M
 @4
 D=D-A
@@ -257,7 +257,7 @@ A=D
 D=M
 @LCL
 M=D
-@R6
+@R8
 A=M
 0;JMP
 (Sys.add12)
@@ -308,15 +308,15 @@ M=M+D
 M=M+1
 @LCL
 D=M
-@R5
+@R7
 M=D
-@R5
+@R7
 D=M
 @5
 D=D-A
 A=D
 D=M
-@R6
+@R8
 M=D
 @SP
 M=M-1
@@ -332,7 +332,7 @@ D=M
 D=D+A
 @SP
 M=D
-@R5
+@R7
 D=M
 @1
 D=D-A
@@ -340,7 +340,7 @@ A=D
 D=M
 @THAT
 M=D
-@R5
+@R7
 D=M
 @2
 D=D-A
@@ -348,7 +348,7 @@ A=D
 D=M
 @THIS
 M=D
-@R5
+@R7
 D=M
 @3
 D=D-A
@@ -356,7 +356,7 @@ A=D
 D=M
 @ARG
 M=D
-@R5
+@R7
 D=M
 @4
 D=D-A
@@ -364,6 +364,6 @@ A=D
 D=M
 @LCL
 M=D
-@R6
+@R8
 A=M
 0;JMP
