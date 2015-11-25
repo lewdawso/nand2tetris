@@ -132,7 +132,7 @@ D=M
 D=D+A
 @SP
 M=D
-@FRAME
+@R5
 D=M
 @1
 D=D-A
@@ -140,7 +140,7 @@ A=D
 D=M
 @THAT
 M=D
-@FRAME
+@R5
 D=M
 @2
 D=D-A
@@ -148,7 +148,7 @@ A=D
 D=M
 @THIS
 M=D
-@FRAME
+@R5
 D=M
 @3
 D=D-A
@@ -156,7 +156,7 @@ A=D
 D=M
 @ARG
 M=D
-@FRAME
+@R5
 D=M
 @4
 D=D-A

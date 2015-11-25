@@ -5,8 +5,8 @@ var asm = [];
 var path = process.argv[2];
 var staticOffset = 16;
 var count = 0;
-var FRAME = "R6";
-var RET = "R7";
+var FRAME = "R5";
+var RET = "R6";
 
 var commands = {"add":"C_ARITHMETIC",
                 "sub":"C_ARITHMETIC",
@@ -384,7 +384,7 @@ function saveState(register) {
 };
 
 function returnState(register, offset) {
-    write(["@FRAME"]);
+    write(["@"+FRAME]);
     write(["D=M"]);
     write(["@"+offset]);
     write(["D=D-A"]);
