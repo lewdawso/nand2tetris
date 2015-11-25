@@ -102,15 +102,15 @@ M=M-D
 M=M+1
 @LCL
 D=M
-@R6
+@R5
 M=D
-@R6
+@R5
 D=M
 @5
 D=D-A
 A=D
 D=M
-@R7
+@R6
 M=D
 @0
 D=A
@@ -164,7 +164,7 @@ A=D
 D=M
 @LCL
 M=D
-@R7
+@R6
 A=M
 A=M
 0;JMP
