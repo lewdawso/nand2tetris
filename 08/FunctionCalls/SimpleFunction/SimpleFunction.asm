@@ -4,8 +4,6 @@ D=A
 M=D
 (SimpleFunction.test)
 @SP
-M=M+1
-@SP
 A=M
 M=0
 A=A+1
