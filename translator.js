@@ -300,6 +300,7 @@ function writeLabel(label) {
 
 function writeFunction(name, locals) {
     writeLabel(name);
+    incrementRegister("SP");
     AtoSP();
     for(var i=0; i<locals; i++) {
         write(["M=0"]);

@@ -58,6 +58,8 @@ M=M+1
 (return.Sys.init.0)
 (SimpleFunction.test)
 @SP
+M=M+1
+@SP
 A=M
 M=0
 A=A+1
