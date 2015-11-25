@@ -5,8 +5,8 @@ var asm = [];
 var path = process.argv[2];
 var staticOffset = 16;
 var count = 0;
-var FRAME = "R5";
-var RET = "R6";
+var FRAME = "R6";
+var RET = "R7";
 
 var commands = {"add":"C_ARITHMETIC",
                 "sub":"C_ARITHMETIC",
@@ -278,7 +278,7 @@ function writeInit() {
     write(["D=A"]);
     write(["@SP"]);
     write(["M=D"]);
-    writeCall("Sys.init", 0);
+    //writeCall("Sys.init", 0);
 };
 
 function writeGoto(label) {
@@ -300,15 +300,11 @@ function writeLabel(label) {
 
 function writeFunction(name, locals) {
     writeLabel(name);
-    incrementRegister("SP");
-    AtoSP();
     for(var i=0; i<locals; i++) {
+        AtoSP();
         write(["M=0"]);
-        write(["A=A+1"]);
+        incrementRegister("SP");
     }
-    write(["D=A"]);
-    write(["@SP"]);
-    write(["M=D"]);
 };
 
 function writeCall(functionName, numArgs) {
@@ -339,7 +335,6 @@ function writeCall(functionName, numArgs) {
     write(["D=M"]);
     write(["@LCL"]);
     write(["M=D"]);
-    incrementRegister("SP");
     writeGoto(functionName);
     writeLabel(returnLabel);
 };
@@ -351,8 +346,12 @@ function writeReturn() {
     write(["@"+FRAME]);
     write(["M=D"]);
     //RET = *(FRAME-5)
+    write(["@"+FRAME]);
+    write(["D=M"]);
     write(["@5"]);
     write(["D=D-A"]);
+    write(["A=D"]);
+    write(["D=M"]);
     write(["@"+RET]);
     write(["M=D"]);
     //*ARG = pop()
@@ -365,24 +364,10 @@ function writeReturn() {
     write(["@SP"]);
     write(['M=D']);
     //return states
-    write(["@"+FRAME]);
-    write(["D=M"]);
-    write(["@1"]);
-    write(["D=D-A"]);
-    write(["@THAT"]);
-    write(["M=D"]);
-    write(["@1"]);
-    write(["D=D-A"]);
-    write(["@THIS"]);
-    write(["M=D"]);
-    write(["@1"]);
-    write(["D=D-A"]);
-    write(["@ARG"]);
-    write(["M=D"]);
-    write(["@1"]);
-    write(["D=D-A"]);
-    write(["@LCL"]);
-    write(["M=D"]);
+    returnState("THAT", 1);
+    returnState("THIS", 2);
+    returnState("ARG", 3);
+    returnState("LCL", 4);
     //goto RET
     write(["@"+RET]);
     write(["A=M"]);
@@ -396,6 +381,18 @@ function saveState(register) {
     AtoSP();
     write(["M=D"]);
     incrementRegister("SP");
+};
+
+function returnState(register, offset) {
+    write(["@FRAME"]);
+    write(["D=M"]);
+    write(["@"+offset]);
+    write(["D=D-A"]);
+    write(["A=D"]);
+    write(["D=M"]);
+    write(["@"+register]);
+    write(["M=D"]);
+
 };
 
 function getTop2Stack() {
