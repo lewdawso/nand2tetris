@@ -355,14 +355,19 @@ function writeReturn() {
     write(["@"+RET]);
     write(["M=D"]);
     //*ARG = pop()
-    stack2Reg("ARG", 0);
+    decrementRegister("SP");
+    AtoSP();
+    write(["D=M"]);
+    write(["@ARG"]);
+    write(["A=M"]);
+    write(["M=D"]);
     //SP = ARG + 1
     write(["@ARG"]);
     write(["D=M"]);
     write(["@1"]);
     write(["D=D+A"]);
     write(["@SP"]);
-    write(['M=D']);
+    write(["M=D"]);
     //return states
     returnState("THAT", 1);
     returnState("THIS", 2);
@@ -370,7 +375,6 @@ function writeReturn() {
     returnState("LCL", 4);
     //goto RET
     write(["@"+RET]);
-    write(["A=M"]);
     write(["A=M"]);
     write(["0;JMP"]);
 }
