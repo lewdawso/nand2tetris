@@ -278,7 +278,7 @@ function writeInit() {
     write(["D=A"]);
     write(["@SP"]);
     write(["M=D"]);
-    //writeCall("Sys.init", 0);
+    writeCall("Sys.init", 0);
 };
 
 function writeGoto(label) {
