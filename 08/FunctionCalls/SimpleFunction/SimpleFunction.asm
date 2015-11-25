@@ -160,5 +160,4 @@ D=M
 M=D
 @R6
 A=M
-A=M
 0;JMP
