@@ -1,12 +1,11 @@
 fs=require('fs');
-var buffer = [];
-var output = [];
 var asm = [];
-var path = process.argv[2];
+var buffer;
+var output;
 var staticOffset = 16;
 var count = 0;
-var FRAME = "R5";
-var RET = "R6";
+var FRAME = "R7";
+var RET = "R8";
 
 var commands = {"add":"C_ARITHMETIC",
                 "sub":"C_ARITHMETIC",
@@ -278,7 +277,7 @@ function writeInit() {
     write(["D=A"]);
     write(["@SP"]);
     write(["M=D"]);
-    //writeCall("Sys.init", 0);
+    writeCall("Sys.init", 0);
 };
 
 function writeGoto(label) {
@@ -476,38 +475,44 @@ function incrementRegister(register) {
 
 function genOutFile() {
     asm = asm.join("\n");
-    path = path.split(".");
-    fd = fs.openSync(path[0] + ".asm", "w");
+    name = process.argv[2].split('/');
+    fd = fs.openSync(name[0] + '/' + name[1] + '/' + name[2] + '/' + name[2] + ".asm", "w");
     fs.write(fd, asm);
 };
 
 function main() {
     writeInit();
-    data=fs.readFileSync(path, "ascii");
-    buffer = data.split(/\n/);
-    parse();
-    for (var k=0; k<output.length; k++) {
-        command = output[k];
-        var cmdType = commandType(command[0]);
-        if (cmdType == "C_ARITHMETIC") {
-            writeArithmetic(command);
-        } else if ((cmdType == "C_POP") || (cmdType == "C_PUSH")) {
-            writePushPop(cmdType, arg1(command), arg2(command));
-        } else if (cmdType == "C_GOTO") {
-            writeGoto(arg1(command));
-        } else if (cmdType == "C_IF") {
-            writeIf(arg1(command));
-        } else if (cmdType == "C_LABEL") {
-            writeLabel(arg1(command));
-        }  else if (cmdType == "C_FUNCTION") {
-            writeFunction(arg1(command), arg2(command));
-        } else if (cmdType == "C_CALL") {
-	        writeCall(arg1(command), arg2(command));
-	    } else if (cmdType == "C_RETURN") {
-            writeReturn();
-        }
-    };
-    genOutFile()
+    var i=2;
+    while(process.argv[i]) {
+        var path = process.argv[i];
+        var data = fs.readFileSync(path, "ascii");
+        buffer = data.split(/\n/);
+        output = [];
+        parse();
+        for (var k=0; k<output.length; k++) {
+            command = output[k];
+            var cmdType = commandType(command[0]);
+            if (cmdType == "C_ARITHMETIC") {
+                writeArithmetic(command);
+            } else if ((cmdType == "C_POP") || (cmdType == "C_PUSH")) {
+                writePushPop(cmdType, arg1(command), arg2(command));
+            } else if (cmdType == "C_GOTO") {
+                writeGoto(arg1(command));
+            } else if (cmdType == "C_IF") {
+                writeIf(arg1(command));
+            } else if (cmdType == "C_LABEL") {
+                writeLabel(arg1(command));
+            }  else if (cmdType == "C_FUNCTION") {
+                writeFunction(arg1(command), arg2(command));
+            } else if (cmdType == "C_CALL") {
+                writeCall(arg1(command), arg2(command));
+            } else if (cmdType == "C_RETURN") {
+                writeReturn();
+            }
+        };
+        i++;
+    };  
+    genOutFile();
 };
 
 main();
