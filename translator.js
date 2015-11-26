@@ -2,10 +2,10 @@ fs=require('fs');
 var asm = [];
 var buffer;
 var output;
-var staticOffset = 16;
 var count = 0;
 var FRAME = "R7";
 var RET = "R8";
+var curFileName;
 
 var commands = {"add":"C_ARITHMETIC",
                 "sub":"C_ARITHMETIC",
@@ -221,10 +221,7 @@ function writePushPop(cmdType, register, index) {
                     };
                     break;
                 case "static":
-                    write(["@"+index]);
-                    write(["D=A"]);
-                    write("@R16");
-                    write(["A=D+A"]);
+                    write("@"+curFileName+"."+index);
                     write(["D=M"]);
                     AtoSP();
                     write(["M=D"]);
@@ -265,7 +262,11 @@ function writePushPop(cmdType, register, index) {
                     };
                     break;
                 case "static":
-                    stack2Reg("STATIC", index);
+                    decrementRegister("SP");
+                    AtoSP();
+                    write(["D=M"]);
+                    write(["@"+curFileName+"."+index]);
+                    write(["M=D"]);
                     break;
         };
             break;
@@ -485,6 +486,8 @@ function main() {
     var i=2;
     while(process.argv[i]) {
         var path = process.argv[i];
+        curFileName = path.split('/')[3];
+        console.log(curFileName);
         var data = fs.readFileSync(path, "ascii");
         buffer = data.split(/\n/);
         output = [];
