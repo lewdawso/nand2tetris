@@ -45,7 +45,7 @@ function isWhiteSpace(command) {
 
 function isSpaceComment(command) {
     for (var i=0; i<command.length; i++) {
-        if (command[i] == "/" && command[i+1] == "/") {
+        if (command[i] == "/") {
             return true;
         };
     };
@@ -105,15 +105,15 @@ function advance() {
 
 function tokenType(token) {
     if (keywords.indexOf(token) != -1) {
-        return "KEYWORD";
+        return "keyword";
     } else if (symbols.indexOf(token) != -1) {
-		return "SYMBOL";
+		return "symbol";
     } else if (token <=0 && token <=32767) {
-		return "INT_CONST";
+		return "int_const";
     } else if (token[0] ==  '"' && token[token.length-1] == '"' ) {
-		return "STRING_CONST";
+		return "string_const";
     } else {
-		return "IDENTIFIER";
+		return "identifier";
     };
 };
 
@@ -125,14 +125,14 @@ function main() {
     var token;
     var token_type;
 	var token_value;
-	write(["<token>"]);
+	write(["<tokens>"]);
 	while(hasMoreTokens()) {
         token = advance(tokens);
     	token_type = tokenType(token);	
-		if (token_type == "STRING_CONST") {
+		if (token_type == "string_const") {
 			token.replace('"', '');
 		};
-		if (token_type == "SYMBOL") {
+		if (token_type == "symbol") {
 			switch(token) {
 				case "<":
 					token = "&lt";
@@ -150,7 +150,7 @@ function main() {
 		};
 		write(["  <" + token_type + ">" + " " + token + " " + "</" + token_type + ">" ]);
 	};
-	write(["</token>"]);
+	write(["</tokens>"]);
 	genOutFile();
 };
 
