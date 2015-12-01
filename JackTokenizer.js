@@ -1,6 +1,7 @@
 fs = require('fs');
 trimmed = [];
-accepted = [];
+parsed = [];
+finalised = [];
 
 function isComment(command) {
     if ((command[0] == "/" && command[1] == "/") || (command[0] == "/" && command[1] == "*") || command[1] == "*" || (command[1] == "*" && command[2] == "/")) {
@@ -33,21 +34,20 @@ function parse() {
     };
     //split commands into individual keywords
     for (var j=0; j<trimmed.length; j++) {
-        trimmed[j] = trimmed[j].split(/([{()}; ])/);
+        trimmed[j] = trimmed[j].split(/([{()};.])|[ ]/);
     };
     for (var i=0; i<trimmed.length; i++) {
         command = trimmed[i]; 
         for (var j=0; j<command.length; j++) {
             if (command[j] != "") {
-                accepted.push(command[j]);
+                parsed.push(command[j]);
             };    
         };
     };   
     //remove whitespace
-    for (var i=0; i<accepted.length; i++) {
-        if (accepted[i] == " " || accepted[i] == "") {
-            //accepted.splice(i, 1);
-            delete accepted[i];
+    for (var i=0; i<parsed.length; i++) {
+        if (!parsed[i] == "") {
+            finalised.push(parsed[i]);
         };
     };
 };
@@ -57,7 +57,6 @@ function main() {
     data = fs.readFileSync(file, 'ascii');
     buffer = data.split(/[\n\r\t]/);
     parse();
-    console.log(accepted);
 }
 
 main();
