@@ -2,6 +2,7 @@ fs = require('fs');
 trimmed = [];
 parsed = [];
 tokens = [];
+output = [];
 
 keywords = 
 [
@@ -29,8 +30,6 @@ keywords =
 ];
 
 symbols = ["{", "}", "(", ")", "[", "]", ".", ",", ";", "+", "-", "*", "/", "&", "|", "<", ">", "=", "~"];
-
-
 
 function isComment(command) {
     if ((command[0] == "/" && command[1] == "/") || (command[0] == "/" && command[1] == "*") || command[1] == "*" || (command[1] == "*" && command[2] == "/")) {
@@ -81,25 +80,42 @@ function parse() {
     };
 };
 
+function write(cmd) {
+	output.push(cmd)
+}
+
+function genOutFile() {
+	output = output.join("\n");
+	name = process.argv[2].split(".");
+	fd = fs.openSync(name[0] + "_T.xml", 'w');
+	fs.write(fd, output);
+};
+
 function hasMoreTokens() {
     if(tokens.length) {
         return true;
     } else {
         return false;
     };
-}:
+};
 
 function advance() {
     return tokens.shift();
 }
 
 function tokenType(token) {
-    switch(token) {
-        case 
-
-    }
-
-}
+    if (keywords.indexOf(token) != -1) {
+        return "KEYWORD";
+    } else if (symbols.indexOf(token) != -1) {
+		return "SYMBOL";
+    } else if (token <=0 && token <=32767) {
+		return "INT_CONST";
+    } else if (token[0] ==  '"' && token[token.length-1] == '"' ) {
+		return "STRING_CONST";
+    } else {
+		return "IDENTIFIER";
+    };
+};
 
 function main() {
     file = process.argv[2] 
@@ -107,9 +123,35 @@ function main() {
     buffer = data.split(/[\n\r\t]/);
     parse();
     var token;
-    if (hasMoreTokens(tokens)) {
-        advance(tokens);
-    };
-}
+    var token_type;
+	var token_value;
+	write(["<token>"]);
+	while(hasMoreTokens()) {
+        token = advance(tokens);
+    	token_type = tokenType(token);	
+		if (token_type == "STRING_CONST") {
+			token.replace('"', '');
+		};
+		if (token_type == "SYMBOL") {
+			switch(token) {
+				case "<":
+					token = "&lt";
+					break;
+				case ">":
+					token = "&gt";
+					break;
+				case '"':
+					token = "&quot";
+					break;
+				case "&":
+					token = "&amp";
+					break;
+			};
+		};
+		write(["  <" + token_type + ">" + " " + token + " " + "</" + token_type + ">" ]);
+	};
+	write(["</token>"]);
+	genOutFile();
+};
 
 main();
