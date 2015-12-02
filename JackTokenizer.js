@@ -62,7 +62,7 @@ function parse() {
     };
     //split commands into individual keywords
     for (var j=0; j<trimmed.length; j++) {
-        trimmed[j] = trimmed[j].split(/([{()};.])|[ ]/);
+        trimmed[j] = trimmed[j].split(/([{()};.])|[, ]/);
     };
     for (var i=0; i<trimmed.length; i++) {
         command = trimmed[i]; 
