@@ -3,6 +3,7 @@ trimmed = [];
 parsed = [];
 tokens = [];
 output = [];
+offset = 0;
 
 keywords = 
 [
@@ -31,38 +32,42 @@ keywords =
 
 symbols = ["{", "}", "(", ")", "[", "]", ".", ",", ";", "+", "-", "*", "/", "&", "|", "<", ">", "=", "~"];
 
-function isComment(command) {
-    if ((command[0] == "/" && command[1] == "/") || (command[0] == "/" && command[1] == "*") || command[1] == "*" || (command[1] == "*" && command[2] == "/")) {
+function isStaticComment(command) {
+    if ((command[0] == "/" && command[1] == "/") || (command[0] == "/" && command[1] == "*") || command[1] == "*" || (command[1] == "*" && command[2] == "/") || command[offset+1] == "*") {
         return true;
     };
+    return false;
 };
 
 function isWhiteSpace(command) {
     if (command.length == 0) {
         return true;
     };
+    return false;
 };
 
-function isSpaceComment(command) {
+//line contains a comment at some point
+function stripComment(command) {
     for (var i=0; i<command.length; i++) {
-        if (command[i] == "/") {
-            return true;
+        if (command[i] == "/" && (command[i+1] == "/" || command[i+1] == "*")) {
+            offset = i;
+            return command.substr(0, i-1);
         };
     };
+    return command;
 };
 
 //gets things into a workable state for tokenizing
 function parse() {
     //strip comments and trim whitespace
     for (var i=0; i<buffer.length; i++) {
-        command = buffer[i]
-        if (!isComment(command) && !isWhiteSpace(command) && !isSpaceComment(command)) {
-            trimmed.push(buffer[i]);
+        if (!isStaticComment(buffer[i]) && !isWhiteSpace(buffer[i])) {
+            trimmed.push(stripComment(buffer[i]));
         };
     };
     //split commands into individual keywords
     for (var j=0; j<trimmed.length; j++) {
-        trimmed[j] = trimmed[j].split(/([{()};.])|[, ]/);
+        trimmed[j] = trimmed[j].split(/([{()};.,~])|[ ]/);
     };
     for (var i=0; i<trimmed.length; i++) {
         command = trimmed[i]; 
@@ -108,8 +113,8 @@ function tokenType(token) {
         return "keyword";
     } else if (symbols.indexOf(token) != -1) {
 		return "symbol";
-    } else if (token <=0 && token <=32767) {
-		return "int_const";
+    } else if (token >= 0 && token <= 32767) {
+		return "integerConstant";
     } else if (token[0] ==  '"' && token[token.length-1] == '"' ) {
 		return "string_const";
     } else {
@@ -135,16 +140,16 @@ function main() {
 		if (token_type == "symbol") {
 			switch(token) {
 				case "<":
-					token = "&lt";
+					token = "&lt;";
 					break;
 				case ">":
-					token = "&gt";
+					token = "&gt;";
 					break;
 				case '"':
-					token = "&quot";
+					token = "&quot;";
 					break;
 				case "&":
-					token = "&amp";
+					token = "&amp;";
 					break;
 			};
 		};
