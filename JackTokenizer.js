@@ -67,12 +67,12 @@ function parse() {
     };
     //split commands into individual keywords
     for (var j=0; j<trimmed.length; j++) {
-        trimmed[j] = trimmed[j].split(/([{()};.,~])|[ ]/);
+        trimmed[j] = trimmed[j].split(/(".*")|([\[\]{()};.,~ ])/);
     };
     for (var i=0; i<trimmed.length; i++) {
         command = trimmed[i]; 
         for (var j=0; j<command.length; j++) {
-            if (command[j] != "") {
+            if (command[j] != " ") {
                 parsed.push(command[j]);
             };    
         };
@@ -116,7 +116,7 @@ function tokenType(token) {
     } else if (token >= 0 && token <= 32767) {
 		return "integerConstant";
     } else if (token[0] ==  '"' && token[token.length-1] == '"' ) {
-		return "string_const";
+		return "stringConstant";
     } else {
 		return "identifier";
     };
@@ -134,8 +134,9 @@ function main() {
 	while(hasMoreTokens()) {
         token = advance(tokens);
     	token_type = tokenType(token);	
-		if (token_type == "string_const") {
-			token.replace('"', '');
+		if (token_type == "stringConstant") {
+			token = token.replace('"', '');
+		    token = token.replace('"', '');
 		};
 		if (token_type == "symbol") {
 			switch(token) {
