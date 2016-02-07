@@ -1,0 +1,14 @@
+#!/bin/bash -e
+
+#top level driver that sets up and invokes JackTokenizer and CompilationEngine
+
+jack="$1"
+path="$(dirname $jack)"
+filename="$(basename $jack)"
+tokens="$(echo $filename | cut -d "." -f 1)_T.xml"
+
+node JackTokenizer.js $jack
+
+#sed-fu to make parsing of tokensizer output easier
+
+sed -e 's/<\([^>]*\)> \([^<]*\) <[^>]*>/"\1" "\2"/g' -e '/<\/*tokens>/d' "${path}/${tokens}" > "${path}/tokens"
