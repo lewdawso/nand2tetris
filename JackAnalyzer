@@ -11,4 +11,8 @@ node JackTokenizer.js $jack
 
 #sed-fu to make parsing of tokensizer output easier
 
-sed -e 's/<\([^>]*\)> \([^<]*\) <[^>]*>/"\1" "\2"/g' -e '/<\/*tokens>/d' "${path}/${tokens}" > "${path}/tokens"
+sed -e 's/[^<]*<\([^>]*\)> \([^<]*\) <[^>]*>/"\1" "\2"/g' -e '/<\/*tokens>/d' "${path}/${tokens}" > "${path}/tokens"
+
+#invoke compilation engine
+
+node CompilationEngine.js "${path}/tokens"
