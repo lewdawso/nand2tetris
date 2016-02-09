@@ -81,12 +81,12 @@ function compileClass() {
         advance();
         
         //classVarDec
-        if (checkToken("static") || checkToken("field")) {
+        while (checkToken("static") || checkToken("field")) {
             compileClassVarDec();
         }
 
         //subroutineDec
-        if (checkToken("constructor"), checkToken("function"), checkToken("method")) {
+        while (checkToken("constructor"), checkToken("function"), checkToken("method")) {
             compileSubroutine();
         }
 
@@ -113,9 +113,9 @@ function compileClassVarDec() {
     advance();
     
     //check type
-    if (!checkToken("int") || !checkToken("char") || !checkToken("bool")) {
+    if (!checkToken("int") || !checkToken("char") || !checkToken("bool") || !checkIdentifier()) {
         console.error("missing type specifier");
-        return;
+        return false;
     }
     writeToken();
     advance();
@@ -132,12 +132,77 @@ function compileClassVarDec() {
         advance(); 
     }
 
-    if (!checkSemicolon()) { return false};
+    if (!checkSemicolon()) { return false };
     writeToken()
     advance();
+    
+    return true;
 }
 
 function compileSubroutine() {
+    writeToken();
+    advance();
+
+    //check return type
+    if (!checkToken("void") || !checkToken("int") || !checkToken("char") || !checkToken("bool") || !checkIdentifier()) {
+        console.error("missing subroutine return type");
+        return false;
+    }
+    
+    writeToken();
+    advance();
+
+    //check subroutine name
+    if (!checkIdentifier()) { return false };
+    writeToken();
+    advance();
+
+    //opening bracket
+    if (!checkToken("(")) { return false };
+    writeToken();
+    advance();
+
+    //parameter list
+    if (!compileParameterList()) { return false };
+    
+    //closing bracket
+    if (!checkToken(")")) { return false };
+    writeToken();
+    advance();
+
+    //subroutine body
+
+    //opening brace
+    if (!checkToken("{")) { return false};
+    writeToken();
+    advance();
+
+    //
+    if (checkToken("var")) {  
+        if (!compileVarDec()) {return false };
+    }
+    
+    if (!compileStatements()) { return false };
+
+    //closing brace
+    if (!checkToken("}")) { return false };
+    writeToken();
+    advance();
+
+    return true;
+};
+
+function parameterList() {
+    //stub
+    return;
+};
+
+function compileVarDec() {
+    //stub
+    return;
+};
+
+function compileStatements() {
     //stub
     return;
 };
@@ -150,7 +215,8 @@ function main() {
     
     //first routine to be called must be compileClass
     compileClass();
-	//genOutFile();
+    console.log(output);
+	genOutFile();
 };
 
 main();
