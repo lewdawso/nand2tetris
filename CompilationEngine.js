@@ -8,8 +8,8 @@ function write(cmd) {
 	output.push(cmd)
 };
 
-function writeToken(token_type, token) {
-    write(["<" + token_type + ">" + " " + token + " " + "</" + token_type + ">" ]);    
+function writeToken() {
+    write(["<" + token.token_type + ">" + " " + token.token + " " + "</" + token.token_type + ">" ]);    
 };
 
 function genOutFile() {
@@ -28,7 +28,7 @@ function hasMoreTokens() {
 };
 
 function advance() {
-    return tokens.shift();
+    token = tokens.shift();
 };
 
 function generateArray(buffer) {
@@ -38,56 +38,104 @@ function generateArray(buffer) {
     }
 };
 
-function checkToken(token, expect) {
-    if (token == expect) {
+function checkToken(expect) {
+    if (token.token == expect) {
         return true;
     }
     return false;
 };
 
-function checkIdentifier(identifier) {
-    if (identifier.match(/^[a-zA-Z_][\w]*$/)) { 
+function checkIdentifier() {
+    if ((token.token).match(/^[a-zA-Z_][\w]*$/)) { 
         return true;
+    } else {
+        console.error("invalid identifier"); 
+        return false;
     }
-    return false;
 };
+
+function checkSemicolon() {
+    if (checkToken(";")) {
+        writeToken();
+        return true;
+    } else {
+        console.error("missing end of line semicolon");
+        return false;
+    }   
+}
 
 function compileClass() {
-    token = advance();
-    if (checkToken(token.token, "class")) {
+    advance();
+    if (checkToken("class")) {
         write(["<class>"]);
-        writeToken(token.token_type, token.token);
-        token = advance();
-        if (checkIdentifier(token.token)) {
-            writeToken(token.token_type, token.token);
-        } else {
-            console.error("invalid class identifier");
-            return;
-        }
-        token = advance();
-        if (!checkToken(token.token, "{")) {
+        writeToken();
+        advance();
+        if (!checkIdentifier()) { return false };   
+        writeToken();
+        advance();
+        if (!checkToken("{")) {
             console.error("no opening brace for class");
             return;
         }
-        writeToken(token.token_type, token.token);
-        token = advance();
+        writeToken();
+        advance();
         
         //classVarDec
-        if (checkToken(token.token, "static") || checkToken(token.token, "field")) {
+        if (checkToken("static") || checkToken("field")) {
             compileClassVarDec();
         }
 
         //subroutineDec
-        if (checkToken(token.token, "constructor"), checkToken(token.token, "function"), checkToken(token.token, "method")) {
+        if (checkToken("constructor"), checkToken("function"), checkToken("method")) {
             compileSubroutine();
         }
-    }  
+
+        advance();
+        if (!checkToken("}")) {
+            console.error("no closing brace for class");
+            return;
+        }
+
+        advance();
+        if (tokens.length != 0) {
+            console.error("tokens present after class closed");
+            return;
+        }
+
+    } else {
+        console.error("missing class keyword to open");
+        return;
+    }
 };
 
 function compileClassVarDec() {
-    //stub
-    return;
-};
+    writeToken();
+    advance();
+    
+    //check type
+    if (!checkToken("int") || !checkToken("char") || !checkToken("bool")) {
+        console.error("missing type specifier");
+        return;
+    }
+    writeToken();
+    advance();
+    if (!checkIdentifier()) { return false };
+    writeToken();
+    advance();
+    
+    //deal with (',', varName)*
+    while (token.token == ",") {
+        writeToken();
+        advance();
+        if (!checkIdentifier()) { return false };
+        writeToken();
+        advance(); 
+    }
+
+    if (!checkSemicolon()) { return false};
+    writeToken()
+    advance();
+}
 
 function compileSubroutine() {
     //stub
