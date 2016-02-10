@@ -64,6 +64,24 @@ function checkSemicolon() {
     }   
 }
 
+function checkTypeAndIdentifier() {
+    //check type
+    if (!checkToken("int") || !checkToken("char") || !checkToken("bool") || !checkIdentifier()) {
+        console.error("missing type specifier");
+        return false;
+    }
+    
+    writeToken();
+    advance();
+
+    //check variable name
+    if (!checkIdentifier) { return false };
+    
+    writeToken();
+    advance();
+    return true;
+};
+
 function compileClass() {
     advance();
     if (checkToken("class")) {
@@ -192,9 +210,19 @@ function compileSubroutine() {
     return true;
 };
 
-function parameterList() {
-    //stub
-    return;
+function compileParameterList() {
+    var success;
+
+    //no paramters
+    if (checkToken(")")) { return true };
+    
+    if (!checkTypeAndIdentifier()) { return false };
+
+    while(checkToken(",")) {
+        if (!checkTypeAndIdentifier()) {success = false ; break};
+    }
+    
+    return true;
 };
 
 function compileVarDec() {
@@ -215,8 +243,7 @@ function main() {
     
     //first routine to be called must be compileClass
     compileClass();
-    console.log(output);
-	genOutFile();
+	//genOutFile();
 };
 
 main();
