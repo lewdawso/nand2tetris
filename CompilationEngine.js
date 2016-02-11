@@ -57,12 +57,13 @@ function checkIdentifier() {
 function checkSemicolon() {
     if (checkToken(";")) {
         writeToken();
+        advance();
         return true;
     } else {
         console.error("missing end of line semicolon");
         return false;
     }   
-}
+};
 
 function checkTypeAndIdentifier() {
     //check type
@@ -185,6 +186,7 @@ function compileSubroutine() {
     
     //closing bracket
     if (!checkToken(")")) { return false };
+    
     writeToken();
     advance();
 
@@ -192,18 +194,20 @@ function compileSubroutine() {
 
     //opening brace
     if (!checkToken("{")) { return false};
+    
     writeToken();
     advance();
-
-    //
-    if (checkToken("var")) {  
-        if (!compileVarDec()) {return false };
+    
+    //possible varDec
+    while (checkToken("var")) {  
+        if (!compileVarDec()) { return false };
     }
     
     if (!compileStatements()) { return false };
 
     //closing brace
     if (!checkToken("}")) { return false };
+    
     writeToken();
     advance();
 
@@ -211,7 +215,7 @@ function compileSubroutine() {
 };
 
 function compileParameterList() {
-    var success;
+    var success = true;
 
     //no paramters
     if (checkToken(")")) { return true };
@@ -222,12 +226,24 @@ function compileParameterList() {
         if (!checkTypeAndIdentifier()) {success = false ; break};
     }
     
-    return true;
+    return success;
 };
 
 function compileVarDec() {
-    //stub
-    return;
+    writeToken();
+    advance();
+
+    if (!checkTypeAndIdentifier()) { return false };
+
+    while (checkToken(",")) {
+        if (!checkIdentifier()) { return false };
+        writeToken();
+        advance();
+    }
+
+    if (!checkSemicolon()) { return false };
+    
+    return true;
 };
 
 function compileStatements() {
