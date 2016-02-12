@@ -272,8 +272,39 @@ function compileStatements() {
 };
 
 function compileLet() {
-    //stub  
-    return;
+    writeToken();
+    advance();
+
+    //varName 
+    if (!checkIdentifier()) { return false };
+
+    writeToken();
+    advance();
+
+    //potential expression
+    if (checkToken("[")) {
+        writeToken();
+        advance();
+    
+        compileExpression();
+
+        if (!checkToken("]")) { return false };
+        
+        writeToken();
+        advance();
+    }
+
+    //equals expression
+    if (!checkToken("=")) { return false };
+
+    writeToken();
+    advance();
+
+    compileExpression();
+
+    if (!checkSemicolon()) { return false }; 
+    
+    return true;
 };
 
 function compileIf() {
@@ -293,6 +324,10 @@ function compileReturn() {
     return;
 };
 
+function compileExpression() {
+    //stub
+    return;
+};
 
 function main() {
     file = process.argv[2] 
