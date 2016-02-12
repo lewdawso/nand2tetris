@@ -82,6 +82,46 @@ function checkTypeAndIdentifier() {
     return true;
 };
 
+function checkOpeningBracket() {
+    if (checkToken("(")) {
+        writeToken();
+        advance();
+        return true;
+    } else {
+        console.error("missing opening bracket");
+        return false;
+};
+
+function checkClosingBracket() {
+    if (checkToken(")")) {
+        writeToken();
+        advance();
+        return true;
+    } else {
+        console.error("missing closing bracket");
+        return false;
+};
+
+function checkOpeningBrace() {
+    if (checkToken("{")) {
+        writeToken();
+        advance();
+        return true;
+    } else {
+        console.error("missing opening brace");
+        return false;
+};
+
+function checkClosingBrace() {
+    if (checkToken("}")) {
+        writeToken();
+        advance();
+        return true;
+    } else {
+        console.error("missing closing brace");
+        return false;
+};
+
 function compileClass() {
     advance();
     if (checkToken("class")) {
@@ -308,9 +348,40 @@ function compileLet() {
 };
 
 function compileIf() {
-    //stub  
-    return;
+    writeToken();
+    advance();
+
+    //varName
+    if (!checkIdentifier()) { return false };
+
+    writeToken();
+    advance();
+
+    //expression
+    if (!checkOpeningBracket()) { return false };
+
+    writeToken();
+    advance();
+
+    compileExpression();
+
+    if (!checkClosingBracket()) { return false };
+
+    if (!checkOpeningBrace()) { return false };
+    
+    compileStatements();
+
+    if (!checkClosingBrace()) { return false };
+
+    if (checkToken("else")) {
+        if (!checkOpeningBrace()) { return false };
+        if (!compileStatements()) { return false };
+        if (!checkClosingBrace()) { return false };
+    }
+   
+    return true
 };
+
 function compileWhile() {
     //stub  
     return;
