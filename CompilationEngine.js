@@ -38,11 +38,10 @@ function generateArray(buffer) {
     }
 };
 
-function checkToken(expect) {
-    if (token.token == expect) {
-        return true;
-    }
-    return false;
+function checkToken() {
+    var args = Array.prototype.slice.call(arguments);
+    if (args.indexOf(token.token) == -1 ) { return false };
+    return true;
 };
 
 function checkIdentifier() {
@@ -67,7 +66,7 @@ function checkSemicolon() {
 
 function checkTypeAndIdentifier() {
     //check type
-    if (!checkToken("int") || !checkToken("char") || !checkToken("bool") || !checkIdentifier()) {
+    if (!checkToken("int", "char", "boolean") && !checkIdentifier()) {
         console.error("missing type specifier");
         return false;
     }
@@ -105,7 +104,7 @@ function compileClass() {
         }
 
         //subroutineDec
-        while (checkToken("constructor"), checkToken("function"), checkToken("method")) {
+        while (checkToken("constructor") || checkToken("function") || checkToken("method")) {
             compileSubroutine();
         }
 
@@ -163,7 +162,7 @@ function compileSubroutine() {
     advance();
 
     //check return type
-    if (!checkToken("void") || !checkToken("int") || !checkToken("char") || !checkToken("bool") || !checkIdentifier()) {
+    if (!checkToken("void", "int", "char", "bool")  || !checkIdentifier()) {
         console.error("missing subroutine return type");
         return false;
     }
@@ -202,7 +201,8 @@ function compileSubroutine() {
     while (checkToken("var")) {  
         if (!compileVarDec()) { return false };
     }
-    
+   
+    //compile statements
     if (!compileStatements()) { return false };
 
     //closing brace
@@ -215,18 +215,16 @@ function compileSubroutine() {
 };
 
 function compileParameterList() {
-    var success = true;
-
     //no paramters
     if (checkToken(")")) { return true };
-    
+
     if (!checkTypeAndIdentifier()) { return false };
 
     while(checkToken(",")) {
-        if (!checkTypeAndIdentifier()) {success = false ; break};
+        if (!checkTypeAndIdentifier()) { return false };
     }
     
-    return success;
+    return true;
 };
 
 function compileVarDec() {
@@ -247,9 +245,54 @@ function compileVarDec() {
 };
 
 function compileStatements() {
-    //stub
+    while (checkToken("let", "if", "while", "do", "return")) {
+
+        switch(token.token) {
+            case "let":
+                if (!compileLet()) { return false };
+                break;
+            case "if":
+                if (!compileIf()) { return false };
+                break;
+            case "while":
+                if (!compileWhile()) { return false };
+                break;
+            case "do":
+                if (!compileDo()) { return false };
+                break;
+            case "return":
+                if (!compileReturn()) { return false };
+                break;
+            default:
+                console.error("invalid statement keyword");
+                return false;
+        }
+    }
+    return true;
+};
+
+function compileLet() {
+    //stub  
     return;
 };
+
+function compileIf() {
+    //stub  
+    return;
+};
+function compileWhile() {
+    //stub  
+    return;
+};
+function compileDo() {
+    //stub  
+    return;
+};
+function compileReturn() {
+    //stub  
+    return;
+};
+
 
 function main() {
     file = process.argv[2] 
