@@ -363,13 +363,13 @@ function compileIf() {
     writeToken();
     advance();
 
-    compileExpression();
+    if (!compileExpression()) { return false };
 
     if (!checkClosingBracket()) { return false };
 
     if (!checkOpeningBrace()) { return false };
     
-    compileStatements();
+    if (!compileStatements()) { return false };
 
     if (!checkClosingBrace()) { return false };
 
@@ -383,8 +383,22 @@ function compileIf() {
 };
 
 function compileWhile() {
-    //stub  
-    return;
+    writeToken();
+    advance();
+
+    if (!checkOpeningBracket()) { return false };
+
+    if (!checkExpression()) { return false };
+    
+    if (!checkClosingBracket()) { return false };
+
+    if (!checkOpeningBrace()) { return false };
+
+    if (!compileStatements()) { return false };
+
+    if (!checkClosingBrace()) { return false };
+    
+    return true;
 };
 function compileDo() {
     //stub  
