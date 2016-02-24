@@ -4,6 +4,11 @@ tokens = [];
 output = [];
 var token;
 
+op = ["+", "-", "*", "/", "&". "|". "<", ">", "="];
+keyword_constant = ["true", "false", "null", "this"];
+//here be issue
+unaryop = ["-", "~"];
+
 function write(cmd) {
 	output.push(cmd)
 };
@@ -41,6 +46,12 @@ function generateArray(buffer) {
 function checkToken() {
     var args = Array.prototype.slice.call(arguments);
     if (args.indexOf(token.token) == -1 ) { return false };
+    return true;
+};
+
+function checkTokenType() {
+    var args = Array.prototype.slice.call(arguments);
+    if (args.indexOf(token.token_type) == -1 ) { return false };
     return true;
 };
 
@@ -120,6 +131,39 @@ function checkClosingBrace() {
     } else {
         console.error("missing closing brace");
         return false;
+};
+
+function checkSubroutine() {}
+
+function checkTerm() {
+
+    ///int, string or keyword
+    if (checkTokenType("integerConstant", "stringConstant", "keywordConstant")) { 
+        writeToken();
+        advance();
+        return true;
+    }
+
+    //(expression)
+    if (checkOpeningBracket()) {
+        if (!compileExpression()) { return false };
+        if (!checkClosingBracket()) { return false };
+    }
+
+    //unaryOp term    
+    if (unaryop.indexOf(token.token) != -1) {
+        writeToken();
+        advance();
+
+        if (!checkTerm()) { return false };
+        return true;
+    }
+
+    //subroutineCall
+
+    
+
+    
 };
 
 function compileClass() {
@@ -400,18 +444,35 @@ function compileWhile() {
     
     return true;
 };
+
 function compileDo() {
-    //stub  
-    return;
+    writeToken();
+    advance();
+
+    //subroutine call
+    if (!checkIdentifier()) { return false };
+
+    if (!checkOpeningBracket()) { return false };
+
+    
+    if (!checkClosingBracket()) { return false };
+
+    if (!checkSemicolon()) { return false };
+
+    return true;
 };
+
 function compileReturn() {
-    //stub  
-    return;
+    writeToken();
+    advance();
+
+    if (!compileExpression()) { return false };
+
+    return true;
 };
 
 function compileExpression() {
-    //stub
-    return;
+    
 };
 
 function main() {
