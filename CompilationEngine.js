@@ -6,7 +6,6 @@ var token;
 
 op = ["+", "-", "*", "/", "&". "|". "<", ">", "="];
 keyword_constant = ["true", "false", "null", "this"];
-//here be issue
 unaryop = ["-", "~"];
 
 function write(cmd) {
@@ -52,6 +51,12 @@ function checkToken() {
 function checkTokenType() {
     var args = Array.prototype.slice.call(arguments);
     if (args.indexOf(token.token_type) == -1 ) { return false };
+    return true;
+};
+
+function checkNextToken() {
+    var args = Array.prototype.slice.call(arguments);
+    if (args.indexOf(tokens[0].token)) { return false };
     return true;
 };
 
@@ -133,7 +138,31 @@ function checkClosingBrace() {
         return false;
 };
 
-function checkSubroutine() {}
+function checkSubroutineCall() {
+    
+    if (!checkIdentifier()) { return false };
+    
+    writeToken();
+    advance();
+
+    //could be subroutineName(blargh) | class/var.subroutine.(blargh)
+
+    if (checkToken(".")) {
+        writeToken();
+        advance();
+        
+        if (!checkIdentifier()) { return false };
+        
+        writeToken();
+        advance();
+    }
+    
+    if (!checkOpeningBracket()) { return false };
+    if (!compileExpressionList()) { return false };
+    if (!checkClosingBracket()) { return false };
+
+    return true;
+};
 
 function checkTerm() {
 
@@ -147,7 +176,8 @@ function checkTerm() {
     //(expression)
     if (checkOpeningBracket()) {
         if (!compileExpression()) { return false };
-        if (!checkClosingBracket()) { return false };
+        if (!checkClosingBracket()) { return false }; 
+        return true;
     }
 
     //unaryOp term    
@@ -159,11 +189,30 @@ function checkTerm() {
         return true;
     }
 
-    //subroutineCall
+    //can now only have varName | varName [expression] | subroutineCall
+    //All of these terms begin with a varName ==> look ahead one token to differentiate
 
-    
 
-    
+    if (checkNextToken("[")) {
+        writeToken();
+        advance();
+
+        if (!compileExpression()) { return false };
+        if (!checkToken("]")) { return false };
+
+        writeToken();
+        advance();
+
+        return true;
+    }
+
+    if (checkNextToken("(")) {
+        if (!checkSubroutineCall()) { return false };
+        return true;
+    }
+
+    if (!checkIdentifier()) { return false } 
+    return true;
 };
 
 function compileClass() {
