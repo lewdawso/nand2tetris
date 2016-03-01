@@ -325,7 +325,7 @@ function compileSubroutine() {
     //subroutine body
 
     //opening brace
-    if (!checkToken("{")) { return false};
+    if (!checkToken("{")) { return false };
     
     writeToken();
     advance();
@@ -498,16 +498,8 @@ function compileDo() {
     writeToken();
     advance();
 
-    //subroutine call
-    if (!checkIdentifier()) { return false };
-
-    if (!checkOpeningBracket()) { return false };
-
-    
-    if (!checkClosingBracket()) { return false };
-
+    if (!checkSubroutineCall()) { return false };
     if (!checkSemicolon()) { return false };
-
     return true;
 };
 
@@ -530,6 +522,22 @@ function compileExpression() {
         advance();
 
         if (!compileTerm()) { return false };
+    }
+    return true;
+};
+
+function compileExpressionList() {
+    //first off, check if we have an empty list
+    if (checkToken(")")) { return true };
+    
+    //now we know we have to compile at least one expression
+    if (!compileExpression()) { return false };
+
+    while (!checkToken(")")) { 
+        if (!checkToken(",")) { return false };
+        writeToken();
+        advance();
+        if (!compileExpression()) { return false };
     }
     return true;
 };
