@@ -164,7 +164,7 @@ function checkSubroutineCall() {
     return true;
 };
 
-function checkTerm() {
+function compileTerm() {
 
     ///int, string or keyword
     if (checkTokenType("integerConstant", "stringConstant", "keywordConstant")) { 
@@ -185,7 +185,7 @@ function checkTerm() {
         writeToken();
         advance();
 
-        if (!checkTerm()) { return false };
+        if (!compileTerm()) { return false };
         return true;
     }
 
@@ -521,7 +521,17 @@ function compileReturn() {
 };
 
 function compileExpression() {
-    
+    //an expression must contain at least one term
+    if (!compileTerm) { return false };
+
+    //(op term)*
+    while (op.indexOf(token.token) != -1) {
+        writeToken();
+        advance();
+
+        if (!compileTerm()) { return false };
+    }
+    return true;
 };
 
 function main() {
