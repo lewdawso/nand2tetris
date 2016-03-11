@@ -105,7 +105,7 @@ function checkSemicolon() {
 function checkTypeAndIdentifier() {
     //check type
     if (!checkToken("int", "char", "boolean") && !checkIdentifier()) {
-        raiseError("missing type specifier in var dec");
+        raiseError("type specifier");
         return false;
     }
     
@@ -113,7 +113,7 @@ function checkTypeAndIdentifier() {
     advance();
 
     //check variable name
-    if (!checkIdentifier) { raiseError("var dec identifier is invalid") ; return false };
+    if (!checkIdentifier) { return false };
     
     writeToken();
     advance();
@@ -344,7 +344,7 @@ function compileSubroutine() {
     if (!checkOpeningBracket()) { return false };
 
     //parameter list
-    if (!compileParameterList()) { return false };
+    if (!compileParameterList()) { raiseError("parameterList") ; return false };
     
     //closing bracket
     if (!checkClosingBracket()) { return false };
@@ -385,7 +385,9 @@ function compileParameterList() {
     if (!checkTypeAndIdentifier()) { raiseError("checkTypeAndIdentifier") ; return false };
 
     while(checkToken(",")) {
-        if (!checkTypeAndIdentifier()) { return false };
+        writeToken();
+        advance();
+        if (!checkTypeAndIdentifier()) { raiseError("checkTypeAndIdentifier") ; return false };
     }
     
     writeClose("parameterList")
