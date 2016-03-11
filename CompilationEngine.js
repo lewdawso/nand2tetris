@@ -483,19 +483,10 @@ function compileIf() {
     writeToken();
     advance();
 
-    //varName
-    if (!checkIdentifier()) { return false };
-
-    writeToken();
-    advance();
-
     //expression
     if (!checkOpeningBracket()) { return false };
 
-    writeToken();
-    advance();
-
-    if (!compileExpression()) { return false };
+    if (!compileExpression()) { raiseError("compileExpression") ; return false };
 
     if (!checkClosingBracket()) { return false };
 
