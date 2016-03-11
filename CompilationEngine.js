@@ -246,7 +246,6 @@ function compileTerm() {
     if (!checkIdentifier()) { return false } 
     writeToken();
     advance();
-
     writeClose("term")
     return true;
 };
@@ -328,7 +327,7 @@ function compileSubroutine() {
     advance();
 
     //check return type
-    if (!checkToken("void", "int", "char", "bool")  || !checkIdentifier()) {
+    if (!checkToken("void", "int", "char", "bool")  && !checkIdentifier()) {
         raiseError("missing subroutine return type");
         return false;
     }
@@ -370,10 +369,7 @@ function compileSubroutine() {
     }
 
     //closing brace
-    if (!checkToken("}")) { return false };
-    
-    writeToken();
-    advance();
+    if (!checkClosingBrace()) { return false };
 
     writeClose("subroutineBody");
 
@@ -525,7 +521,7 @@ function compileWhile() {
 
     if (!checkOpeningBracket()) { return false };
 
-    if (!checkExpression()) { return false };
+    if (!compileExpression()) { return false };
     
     if (!checkClosingBracket()) { return false };
 
@@ -554,7 +550,6 @@ function compileReturn() {
     writeOpen("returnStatement");
     writeToken();
     advance();
-
     //expression is optional
     if (checkToken(";")) {
         writeToken();
@@ -562,8 +557,9 @@ function compileReturn() {
         writeClose("returnStatement")
         return true;
     }
-        
+
     if (!compileExpression()) { raiseError("compileExpression") ; return false };
+    if (!checkSemicolon()) { return false };
     writeClose("returnStatement");
     return true;
 };
