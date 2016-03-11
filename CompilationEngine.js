@@ -3,10 +3,18 @@ buffer = [];
 tokens = [];
 output = [];
 var token;
+var previousToken;
 
 op = ["+", "-", "*", "/", "&", "|", "<", ">", "="];
 keyword_constant = ["true", "false", "null", "this"];
 unaryop = ["-", "~"];
+
+function debug() {
+    console.log("*** DEBUG ***");
+    console.log("previous token: " + previousToken.token);
+    console.log("current token: " + token.token);
+    console.log("next token: " + tokens[0].token);
+};
 
 function write(cmd) {
 	output.push(cmd);
@@ -41,6 +49,7 @@ function hasMoreTokens() {
 };
 
 function advance() {
+    previousToken = token;
     token = tokens.shift();
 };
 
@@ -260,7 +269,7 @@ function compileClass() {
         
         //classVarDec
         while (checkToken("static") || checkToken("field")) {
-            if (!compileClassVarDec()) { raiseError("compileClassVarDec"); return false };
+            if (!compileClassVarDec()) { return false };
         }
 
         //subroutineDec
@@ -287,15 +296,14 @@ function compileClassVarDec() {
     writeOpen("classVarDec")
     writeToken();
     advance();
-    
     //check type
-    if (!checkToken("int") || !checkToken("char") || !checkToken("bool") || !checkIdentifier()) {
+    if (!checkToken("int", "char", "bool") && !checkIdentifier()) {
         raiseError("missing type specifier");
         return false;
     }
     writeToken();
     advance();
-    if (!checkIdentifier()) { return false };
+    if (!checkIdentifier()) { raiseError("checkIdentifier") ; return false };
     writeToken();
     advance();
     
@@ -309,8 +317,6 @@ function compileClassVarDec() {
     }
 
     if (!checkSemicolon()) { return false };
-    writeToken()
-    advance();
     
     writeClose("classVarDec")
     return true;
@@ -602,7 +608,7 @@ function main() {
     generateArray(buffer);
     
     //first routine to be called must be compileClass
-    if (!compileClass()) { raiseError("unable to compile class") ; console.log(token.token) ; return }
+    if (!compileClass()) { raiseError("unable to compile class") ; debug() ; return }
 	genOutFile();
 };
 
