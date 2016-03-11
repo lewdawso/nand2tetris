@@ -268,12 +268,8 @@ function compileClass() {
             if (!compileSubroutine()) { raiseError("compileSubroutine"); return false };
         }
 
-        if (!checkToken("}")) {
-            raiseError("no closing brace for class");
-            return false;
-        }
+        if (!checkClosingBrace()) { return false }
 
-        advance();
         if (tokens.length != 0) {
             raiseError("tokens present after class closed");
             return false;
@@ -348,6 +344,8 @@ function compileSubroutine() {
     //closing bracket
     if (!checkClosingBracket()) { return false };
 
+    writeOpen("subroutineBody");
+
     //opening brace
     if (!checkOpeningBrace()) { return false };
     
@@ -371,7 +369,9 @@ function compileSubroutine() {
     writeToken();
     advance();
 
-    writeClose("subroutineDec")
+    writeClose("subroutineBody");
+
+    writeClose("subroutineDec");
     return true;
 };
 
@@ -553,6 +553,7 @@ function compileReturn() {
     if (checkToken(";")) {
         writeToken();
         advance();
+        writeClose("returnStatement")
         return true;
     }
         
