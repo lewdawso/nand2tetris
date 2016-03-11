@@ -4,12 +4,13 @@ tokens = [];
 output = [];
 var token;
 
-op = ["+", "-", "*", "/", "&". "|". "<", ">", "="];
+op = ["+", "-", "*", "/", "&", "|", "<", ">", "="];
 keyword_constant = ["true", "false", "null", "this"];
 unaryop = ["-", "~"];
 
 function write(cmd) {
-	output.push(cmd)
+	output.push(cmd);
+    console.log(cmd);
 };
 
 function writeToken() {
@@ -42,6 +43,10 @@ function generateArray(buffer) {
     }
 };
 
+function raiseError(message) {
+    console.error("error: " + message);
+};
+
 function checkToken() {
     var args = Array.prototype.slice.call(arguments);
     if (args.indexOf(token.token) == -1 ) { return false };
@@ -56,7 +61,7 @@ function checkTokenType() {
 
 function checkNextToken() {
     var args = Array.prototype.slice.call(arguments);
-    if (args.indexOf(tokens[0].token)) { return false };
+    if (args.indexOf(tokens[0].token) == -1) { return false };
     return true;
 };
 
@@ -64,7 +69,7 @@ function checkIdentifier() {
     if ((token.token).match(/^[a-zA-Z_][\w]*$/)) { 
         return true;
     } else {
-        console.error("invalid identifier"); 
+        raiseError("invalid identifier");
         return false;
     }
 };
@@ -75,7 +80,7 @@ function checkSemicolon() {
         advance();
         return true;
     } else {
-        console.error("missing end of line semicolon");
+        raiseError("missing end of line semicolon");
         return false;
     }   
 };
@@ -83,7 +88,7 @@ function checkSemicolon() {
 function checkTypeAndIdentifier() {
     //check type
     if (!checkToken("int", "char", "boolean") && !checkIdentifier()) {
-        console.error("missing type specifier");
+        raiseError("missing type specifier in var dec");
         return false;
     }
     
@@ -91,7 +96,7 @@ function checkTypeAndIdentifier() {
     advance();
 
     //check variable name
-    if (!checkIdentifier) { return false };
+    if (!checkIdentifier) { raiseError("var dec identifier is invalid") ; return false };
     
     writeToken();
     advance();
@@ -104,8 +109,9 @@ function checkOpeningBracket() {
         advance();
         return true;
     } else {
-        console.error("missing opening bracket");
+        raiseError("missing opening bracket");
         return false;
+    }
 };
 
 function checkClosingBracket() {
@@ -114,8 +120,9 @@ function checkClosingBracket() {
         advance();
         return true;
     } else {
-        console.error("missing closing bracket");
+        raiseError("missing closing bracket");
         return false;
+    }
 };
 
 function checkOpeningBrace() {
@@ -124,8 +131,9 @@ function checkOpeningBrace() {
         advance();
         return true;
     } else {
-        console.error("missing opening brace");
+        raiseError("missing opening brace");
         return false;
+    }
 };
 
 function checkClosingBrace() {
@@ -134,8 +142,9 @@ function checkClosingBrace() {
         advance();
         return true;
     } else {
-        console.error("missing closing brace");
+        raiseError("missing closing brace");
         return false;
+    }
 };
 
 function checkSubroutineCall() {
@@ -174,9 +183,9 @@ function compileTerm() {
     }
 
     //(expression)
-    if (checkOpeningBracket()) {
-        if (!compileExpression()) { return false };
-        if (!checkClosingBracket()) { return false }; 
+    if (checkToken("(")) {
+        if (!compileExpression()) { raiseError("compileExpression") ; return false };
+        if (!checkClosingBracket()) { return false }
         return true;
     }
 
@@ -194,6 +203,11 @@ function compileTerm() {
 
 
     if (checkNextToken("[")) {
+        if (!checkIdentifier()) { return false };
+        writeToken();
+        advance();
+
+        //write "["
         writeToken();
         advance();
 
@@ -212,6 +226,8 @@ function compileTerm() {
     }
 
     if (!checkIdentifier()) { return false } 
+    writeToken();
+    advance();
     return true;
 };
 
@@ -221,41 +237,41 @@ function compileClass() {
         write(["<class>"]);
         writeToken();
         advance();
-        if (!checkIdentifier()) { return false };   
+        if (!checkIdentifier()) { raiseError("invalid class identifier"); return false };   
         writeToken();
         advance();
         if (!checkToken("{")) {
-            console.error("no opening brace for class");
-            return;
+            raiseError("no opening brace for class");
+            return false;
         }
         writeToken();
         advance();
         
         //classVarDec
         while (checkToken("static") || checkToken("field")) {
-            compileClassVarDec();
+            if (!compileClassVarDec()) { raiseError("compileClassVarDec"); return false };
         }
 
         //subroutineDec
         while (checkToken("constructor") || checkToken("function") || checkToken("method")) {
-            compileSubroutine();
+            if (!compileSubroutine()) { raiseError("compileSubroutine"); return false };
         }
 
-        advance();
         if (!checkToken("}")) {
-            console.error("no closing brace for class");
-            return;
+            raiseError("no closing brace for class");
+            return false;
         }
 
         advance();
         if (tokens.length != 0) {
-            console.error("tokens present after class closed");
-            return;
+            raiseError("tokens present after class closed");
+            return false;
         }
+        return true;
 
     } else {
-        console.error("missing class keyword to open");
-        return;
+        raiseError("missing class keyword to open");
+        return false;
     }
 };
 
@@ -265,7 +281,7 @@ function compileClassVarDec() {
     
     //check type
     if (!checkToken("int") || !checkToken("char") || !checkToken("bool") || !checkIdentifier()) {
-        console.error("missing type specifier");
+        raiseError("missing type specifier");
         return false;
     }
     writeToken();
@@ -296,7 +312,7 @@ function compileSubroutine() {
 
     //check return type
     if (!checkToken("void", "int", "char", "bool")  || !checkIdentifier()) {
-        console.error("missing subroutine return type");
+        raiseError("missing subroutine return type");
         return false;
     }
     
@@ -304,39 +320,35 @@ function compileSubroutine() {
     advance();
 
     //check subroutine name
-    if (!checkIdentifier()) { return false };
+    if (!checkIdentifier()) { raiseError("invalid subroutine identifier") ; return false };
     writeToken();
     advance();
 
     //opening bracket
-    if (!checkToken("(")) { return false };
-    writeToken();
-    advance();
+    if (!checkOpeningBracket()) { return false };
 
     //parameter list
     if (!compileParameterList()) { return false };
     
     //closing bracket
-    if (!checkToken(")")) { return false };
-    
-    writeToken();
-    advance();
-
-    //subroutine body
+    if (!checkClosingBracket()) { return false };
 
     //opening brace
-    if (!checkToken("{")) { return false };
-    
-    writeToken();
-    advance();
+    if (!checkOpeningBrace()) { return false };
     
     //possible varDec
     while (checkToken("var")) {  
-        if (!compileVarDec()) { return false };
+        if (!compileVarDec()) { 
+            raiseError("error: compileVarDec");
+            return false;
+        }
     }
-   
+
     //compile statements
-    if (!compileStatements()) { return false };
+    if (!compileStatements()) { 
+        raiseError("compileStatements");
+        return false;
+    }
 
     //closing brace
     if (!checkToken("}")) { return false };
@@ -351,7 +363,7 @@ function compileParameterList() {
     //no paramters
     if (checkToken(")")) { return true };
 
-    if (!checkTypeAndIdentifier()) { return false };
+    if (!checkTypeAndIdentifier()) { raiseError("checkTypeAndIdentifier") ; return false };
 
     while(checkToken(",")) {
         if (!checkTypeAndIdentifier()) { return false };
@@ -364,7 +376,7 @@ function compileVarDec() {
     writeToken();
     advance();
 
-    if (!checkTypeAndIdentifier()) { return false };
+    if (!checkTypeAndIdentifier()) { raiseError("checkTypeAndIdentifier") ; return false };
 
     while (checkToken(",")) {
         if (!checkIdentifier()) { return false };
@@ -382,22 +394,22 @@ function compileStatements() {
 
         switch(token.token) {
             case "let":
-                if (!compileLet()) { return false };
+                if (!compileLet()) { raiseError("compileLet") ; return false };
                 break;
             case "if":
-                if (!compileIf()) { return false };
+                if (!compileIf()) { raiseError("compileIf") ; return false };
                 break;
             case "while":
-                if (!compileWhile()) { return false };
+                if (!compileWhile()) { raiseError("compileWhile") ; return false };
                 break;
             case "do":
-                if (!compileDo()) { return false };
+                if (!compileDo()) { raiseError("compileDo") ; return false };
                 break;
             case "return":
-                if (!compileReturn()) { return false };
+                if (!compileReturn()) { raiseError("compileReturn") ; return false };
                 break;
             default:
-                console.error("invalid statement keyword");
+                raiseError("invalid statement keyword");
                 return false;
         }
     }
@@ -409,7 +421,7 @@ function compileLet() {
     advance();
 
     //varName 
-    if (!checkIdentifier()) { return false };
+    if (!checkIdentifier()) { raiseError("invalid compileLet identifier") ; return false };
 
     writeToken();
     advance();
@@ -428,12 +440,12 @@ function compileLet() {
     }
 
     //equals expression
-    if (!checkToken("=")) { return false };
+    if (!checkToken("=")) { raiseError("missing =") ; return false };
 
     writeToken();
     advance();
 
-    compileExpression();
+    if (!compileExpression()) { raiseError("unable to compileExpression inside compileLet") ; return false }
 
     if (!checkSemicolon()) { return false }; 
     
@@ -471,7 +483,6 @@ function compileIf() {
         if (!compileStatements()) { return false };
         if (!checkClosingBrace()) { return false };
     }
-   
     return true
 };
 
@@ -507,20 +518,25 @@ function compileReturn() {
     writeToken();
     advance();
 
-    if (!compileExpression()) { return false };
-
+    //expression is optional
+    if (checkToken(";")) {
+        writeToken();
+        advance();
+        return true;
+    }
+        
+    if (!compileExpression()) { raiseError("compileExpression") ; return false };
     return true;
 };
 
 function compileExpression() {
     //an expression must contain at least one term
-    if (!compileTerm) { return false };
+    if (!compileTerm()) { raiseError("compileTerm") ; return false };
 
     //(op term)*
     while (op.indexOf(token.token) != -1) {
         writeToken();
         advance();
-
         if (!compileTerm()) { return false };
     }
     return true;
@@ -549,7 +565,7 @@ function main() {
     generateArray(buffer);
     
     //first routine to be called must be compileClass
-    compileClass();
+    if (!compileClass()) { raiseError("unable to compile class") }
 	//genOutFile();
 };
 
