@@ -10,8 +10,15 @@ unaryop = ["-", "~"];
 
 function write(cmd) {
 	output.push(cmd);
-    console.log(cmd);
 };
+
+function writeOpen(cmd) {
+    output.push("<" + cmd + ">")
+}
+
+function writeClose(cmd) {
+    output.push("</" + cmd + ">")
+}
 
 function writeToken() {
     write(["<" + token.token_type + ">" + " " + token.token + " " + "</" + token.token_type + ">" ]);    
@@ -19,8 +26,9 @@ function writeToken() {
 
 function genOutFile() {
 	output = output.join("\n");
-	name = process.argv[2].split(".");
-	fd = fs.openSync(name[0] + "_.xml", 'w');
+	path = process.argv[2].split("/")
+    name = process.argv[3]
+	fd = fs.openSync(path[0] + "/" + path[1] + "/" + name + "_.xml", 'w');
 	fs.write(fd, output);
 };
 
@@ -174,7 +182,8 @@ function checkSubroutineCall() {
 };
 
 function compileTerm() {
-
+    
+    writeOpen("term")
     ///int, string or keyword
     if (checkTokenType("integerConstant", "stringConstant", "keywordConstant")) { 
         writeToken();
@@ -228,13 +237,15 @@ function compileTerm() {
     if (!checkIdentifier()) { return false } 
     writeToken();
     advance();
+
+    writeClose("term")
     return true;
 };
 
 function compileClass() {
     advance();
     if (checkToken("class")) {
-        write(["<class>"]);
+        writeOpen("class")
         writeToken();
         advance();
         if (!checkIdentifier()) { raiseError("invalid class identifier"); return false };   
@@ -267,6 +278,7 @@ function compileClass() {
             raiseError("tokens present after class closed");
             return false;
         }
+        writeClose("class")
         return true;
 
     } else {
@@ -276,6 +288,7 @@ function compileClass() {
 };
 
 function compileClassVarDec() {
+    writeOpen("classVarDec")
     writeToken();
     advance();
     
@@ -303,10 +316,12 @@ function compileClassVarDec() {
     writeToken()
     advance();
     
+    writeClose("classVarDec")
     return true;
 }
 
 function compileSubroutine() {
+    writeOpen("subroutineDec")
     writeToken();
     advance();
 
@@ -356,12 +371,14 @@ function compileSubroutine() {
     writeToken();
     advance();
 
+    writeClose("subroutineDec")
     return true;
 };
 
 function compileParameterList() {
     //no paramters
-    if (checkToken(")")) { return true };
+    writeOpen("parameterList")
+    if (checkToken(")")) { writeClose("parameterList") ; return true };
 
     if (!checkTypeAndIdentifier()) { raiseError("checkTypeAndIdentifier") ; return false };
 
@@ -369,10 +386,12 @@ function compileParameterList() {
         if (!checkTypeAndIdentifier()) { return false };
     }
     
+    writeClose("parameterList")
     return true;
 };
 
 function compileVarDec() {
+    writeOpen("varDec")
     writeToken();
     advance();
 
@@ -386,10 +405,12 @@ function compileVarDec() {
 
     if (!checkSemicolon()) { return false };
     
+    writeClose("varDec")
     return true;
 };
 
 function compileStatements() {
+    writeOpen("statements")
     while (checkToken("let", "if", "while", "do", "return")) {
 
         switch(token.token) {
@@ -413,10 +434,12 @@ function compileStatements() {
                 return false;
         }
     }
+    writeClose("statements")
     return true;
 };
 
 function compileLet() {
+    writeOpen("letStatement")
     writeToken();
     advance();
 
@@ -449,10 +472,12 @@ function compileLet() {
 
     if (!checkSemicolon()) { return false }; 
     
+    writeClose("letStatement");
     return true;
 };
 
 function compileIf() {
+    writeOpen("ifStatment");
     writeToken();
     advance();
 
@@ -483,10 +508,12 @@ function compileIf() {
         if (!compileStatements()) { return false };
         if (!checkClosingBrace()) { return false };
     }
+    writeClose("ifStatement");
     return true
 };
 
 function compileWhile() {
+    writeOpen("whileStatement");
     writeToken();
     advance();
 
@@ -502,19 +529,23 @@ function compileWhile() {
 
     if (!checkClosingBrace()) { return false };
     
+    writeClose("whileStatement");
     return true;
 };
 
 function compileDo() {
+    writeOpen("doStatement");
     writeToken();
     advance();
 
     if (!checkSubroutineCall()) { return false };
     if (!checkSemicolon()) { return false };
+    writeClose("doStatement");
     return true;
 };
 
 function compileReturn() {
+    writeOpen("returnStatement");
     writeToken();
     advance();
 
@@ -526,10 +557,12 @@ function compileReturn() {
     }
         
     if (!compileExpression()) { raiseError("compileExpression") ; return false };
+    writeClose("returnStatement");
     return true;
 };
 
 function compileExpression() {
+    writeOpen("expression");
     //an expression must contain at least one term
     if (!compileTerm()) { raiseError("compileTerm") ; return false };
 
@@ -539,12 +572,14 @@ function compileExpression() {
         advance();
         if (!compileTerm()) { return false };
     }
+    writeClose("expression");
     return true;
 };
 
 function compileExpressionList() {
+    writeOpen("expressionList");
     //first off, check if we have an empty list
-    if (checkToken(")")) { return true };
+    if (checkToken(")")) { writeClose("expressionList") ; return true };
     
     //now we know we have to compile at least one expression
     if (!compileExpression()) { return false };
@@ -555,6 +590,7 @@ function compileExpressionList() {
         advance();
         if (!compileExpression()) { return false };
     }
+    writeClose("expressionList");
     return true;
 };
 
@@ -565,8 +601,8 @@ function main() {
     generateArray(buffer);
     
     //first routine to be called must be compileClass
-    if (!compileClass()) { raiseError("unable to compile class") }
-	//genOutFile();
+    if (!compileClass()) { raiseError("unable to compile class") ; return }
+	genOutFile();
 };
 
 main();

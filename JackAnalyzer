@@ -6,6 +6,7 @@ jack="$1"
 path="$(dirname $jack)"
 filename="$(basename $jack)"
 tokens="$(echo $filename | cut -d "." -f 1)_T.xml"
+core_name=$(echo $filename | cut -d "." -f 1)
 
 node JackTokenizer.js $jack
 
@@ -15,4 +16,4 @@ sed -e 's/[^<]*<\([^>]*\)> \([^<]*\) <[^>]*>/"\1" "\2"/g' -e '/<\/*tokens>/d' "$
 
 #invoke compilation engine
 
-node CompilationEngine.js "${path}/tokens"
+node CompilationEngine.js "${path}/tokens" "$core_name"
