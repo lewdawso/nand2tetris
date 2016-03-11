@@ -602,7 +602,7 @@ function main() {
     generateArray(buffer);
     
     //first routine to be called must be compileClass
-    if (!compileClass()) { raiseError("unable to compile class") ; return }
+    if (!compileClass()) { raiseError("unable to compile class") ; console.log(token.token) ; return }
 	genOutFile();
 };
 
