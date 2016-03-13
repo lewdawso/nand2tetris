@@ -238,7 +238,7 @@ function compileTerm() {
         return true;
     }
 
-    if (checkNextToken("(")) {
+    if (checkNextToken("(") || checkNextToken(".")) {
         if (!checkSubroutineCall()) { return false };
         return true;
     }
@@ -458,7 +458,7 @@ function compileLet() {
         writeToken();
         advance();
     
-        compileExpression();
+        if (!compileExpression()) { raiseError("compileExpression") ; return false };
 
         if (!checkToken("]")) { return false };
         
@@ -472,7 +472,7 @@ function compileLet() {
     writeToken();
     advance();
 
-    if (!compileExpression()) { raiseError("unable to compileExpression inside compileLet") ; return false }
+    if (!compileExpression()) { raiseError("unable to compileExpression inside compileLet") ; return false };
 
     if (!checkSemicolon()) { return false }; 
     
@@ -561,7 +561,6 @@ function compileExpression() {
     writeOpen("expression");
     //an expression must contain at least one term
     if (!compileTerm()) { raiseError("compileTerm") ; return false };
-
     //(op term)*
     while (op.indexOf(token.token) != -1) {
         writeToken();
