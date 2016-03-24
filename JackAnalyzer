@@ -16,4 +16,4 @@ sed -e 's/[^<]*<\([^>]*\)> \([^<]*\) <[^>]*>/"\1" "\2"/g' -e '/<\/*tokens>/d' "$
 
 #invoke compilation engine
 
-node CompilationEngine.js "${path}/tokens" "$core_name"
+node --stack_size=8000 CompilationEngine.js "${path}/tokens" "$core_name"

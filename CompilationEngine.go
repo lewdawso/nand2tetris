@@ -9,15 +9,42 @@ import (
 )
 
 var tokens [][]string
+var output []string
 
 func generateTokenArray(slice []string) {
 
     for i := range slice {
-        blargh := strings.Split(slice[i], " ")
-        tokens = append(tokens, blargh)
+        pair := strings.Split(slice[i], " ")
+        tokens = append(tokens, pair)
     }
-    fmt.Println(tokens[0][0])
-    fmt.Println(tokens[0][1])
+}
+
+func write(cmd string) {
+    output = append(output, cmd)
+}
+
+func writeOpen(cmd string) {
+    output = append(output, "<" + cmd + ">")
+}
+
+func writeClose(cmd string) {
+    output = append(output, "</" + cmd + ">")
+}
+
+func raiseError(message string) {
+    fmt.Println("error: ", message)
+}
+
+func checkToken(slice []string) bool {
+    fmt.Println(slice)
+}
+
+func compileClass() bool {
+
+    //if checkToken("class") {
+    //    writeOpen("class")
+    //}
+    return true
 }
 
 func main () {
@@ -31,4 +58,12 @@ func main () {
     stringified = re.ReplaceAllString(stringified, "")
     slice := strings.Split(stringified, "\n")
     generateTokenArray(slice)
+
+    //first routine to be called must be compileClass
+    if !compileClass() {
+        raiseError("unable to compile class")
+        return
+    }
+    writeOpen("class")
+    checkToken("blargh")
 }
