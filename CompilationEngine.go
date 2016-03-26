@@ -9,6 +9,7 @@ import (
 )
 
 var tokens [][]string
+var current []string
 var output []string
 
 func generateTokenArray(slice []string) {
@@ -17,6 +18,7 @@ func generateTokenArray(slice []string) {
         pair := strings.Split(slice[i], " ")
         tokens = append(tokens, pair)
     }
+    advance()
 }
 
 func write(cmd string) {
@@ -31,19 +33,35 @@ func writeClose(cmd string) {
     output = append(output, "</" + cmd + ">")
 }
 
+func writeToken() {
+    //do this better
+    formatted := "<" + current[0] + ">" + " " + current[1] + " " + "</" + current[0] + ">"
+    output = append(output, formatted)
+    advance()
+}
+
+func advance() {
+    current = tokens[0]
+    tokens = tokens[1:]
+}
+
 func raiseError(message string) {
     fmt.Println("error: ", message)
 }
 
-func checkToken(slice []string) bool {
-    fmt.Println(slice)
+func checkToken(token string) bool {
+    if strings.Compare(token, current[1]) == 0 {
+        return true
+    }
+    return false
 }
 
 func compileClass() bool {
 
-    //if checkToken("class") {
-    //    writeOpen("class")
-    //}
+    if checkToken("class") {
+        writeOpen("class")
+        writeToken()
+    }
     return true
 }
 
@@ -60,10 +78,8 @@ func main () {
     generateTokenArray(slice)
 
     //first routine to be called must be compileClass
-    if !compileClass() {
+    if !(compileClass()) {
         raiseError("unable to compile class")
         return
     }
-    writeOpen("class")
-    checkToken("blargh")
 }
