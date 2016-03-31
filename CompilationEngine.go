@@ -512,26 +512,26 @@ func compileReturn() bool {
 
 func compileExpression() bool {
     writeOpen("expression")
-
     //an expression must contain at least one term
     if !compileTerm() {
         raiseError("compileTerm")
         return false
     }
 
-    //(op term)* (bit unecessary to to use binary search here but hey ho)
-    for {
-        i := sort.SearchStrings(operators, current[1])
-        if i < len(operators) {
-            if operators[i] == current[1] {
+    //(op term)* 
+    op := true
+    for op {
+        for i := range operators {
+            if strings.Compare(operators[i], current[1]) == 0 {
+                op = true
                 writeToken()
                 if !compileTerm() {
                     raiseError("compileTerm")
                     return false
                 }
+                break
             }
-        } else {
-            break
+        op = false
         }
     }
 
@@ -549,7 +549,7 @@ func compileTerm() bool {
     }
 
     //(expression)
-    if checkToken("(") {
+    if checkOpeningBracket() {
         if !compileExpression() {
             raiseError("compileExpression")
             return false
@@ -619,6 +619,7 @@ func checkSubroutineCall() bool {
     }
 
     if !checkOpeningBracket() { return false }
+
     if !compileExpressionList() { 
         raiseError("compileExpressionList")
         return false
@@ -658,11 +659,18 @@ func compileExpressionList() bool {
 }
 
 func main () {
+
+    //arguments
+    args := os.Args
+    filepath := args[1]
+    target := args[2]
+
     //open tokens file
-    data, err := ioutil.ReadFile("tokens")
+    data, err := ioutil.ReadFile(filepath)
     if err != nil {
         os.Exit(1)
     }
+
     stringified := string(data)
     re, _ := regexp.Compile("\"")
     stringified = re.ReplaceAllString(stringified, "")
@@ -675,6 +683,17 @@ func main () {
     //first routine to be called must be compileClass
     if !compileClass() {
         raiseError("unable to compile class")
+        debug()
     }
-    debug()
+
+    //write output to file
+    f, err := os.Create(target)
+    if err != nil {
+        os.Exit(1)
+    }
+
+    for i := range output {
+        f.WriteString(output[i])
+        f.WriteString("\n")
+    }
 }
