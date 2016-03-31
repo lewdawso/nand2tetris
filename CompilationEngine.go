@@ -56,6 +56,15 @@ func checkToken(token string) bool {
     return false
 }
 
+func checkTokenSlice(slice []string) bool {
+    for i := range slice {
+        if strings.Compare(slice[i], current[1]) == 0 {
+            return true
+        }
+    }
+    return false
+}
+
 func checkIdentifier() bool {
     re, err := regexp.Compile("^[a-zA-Z_][\\w]*$")
     if err != nil {
@@ -69,7 +78,7 @@ func checkIdentifier() bool {
     return true
 }
 
-func checkOpeningBrace() {
+func checkOpeningBrace() bool {
     if !checkToken("{") {
         raiseError("missing opening brace")
         return false
@@ -78,7 +87,7 @@ func checkOpeningBrace() {
     return true
 }
 
-func checkClosingBrace() {
+func checkClosingBrace() bool {
     if !checkToken("}") {
         raiseError("missing closing brace")
         return false
@@ -87,7 +96,7 @@ func checkClosingBrace() {
     return true
 }
 
-func checkOpeningBracket() {
+func checkOpeningBracket() bool {
     if !checkToken("(") {
         raiseError("missing opening bracket")
         return false
@@ -96,9 +105,18 @@ func checkOpeningBracket() {
     return true
 }
 
-func checkClosingBracket() {
+func checkClosingBracket() bool {
     if !checkToken(")") {
         raiseError("missing closing bracket")
+        return false
+    }
+    writeToken()
+    return true
+}
+
+func checkSemicolon() bool {
+    if !checkToken(";") {
+        raiseError("missing semicolon")
         return false
     }
     writeToken()
@@ -116,7 +134,43 @@ func compileClass() bool {
     if !checkIdentifier() { return false }
 
     if !checkOpeningBrace() { return false }
-    
+
+    for (checkTokenSlice([]string{"static", "field"})) {
+        if !compileClassVarDec() {
+            raiseError("compileClassVarDec")
+            return false
+        }
+    }
+
+    return true
+}
+
+func compileClassVarDec() bool {
+    writeOpen("classVarDec")
+    writeToken()
+
+    //check type
+    if (!checkTokenSlice([]string{"int, char, bool"}) && !checkIdentifier()) {
+        raiseError("missing type specifier")
+        return false
+    }
+
+    writeToken()
+
+    if !checkIdentifier() { return false }
+
+    //deal with (',', varName)*
+    for checkToken(",") {
+        writeToken()
+        if !checkIdentifier() {
+            return false
+        }
+    }
+
+    if !checkSemicolon() { return false }
+
+    writeClose("classVarDec")
+
     return true
 }
 
@@ -131,9 +185,8 @@ func main () {
     stringified = re.ReplaceAllString(stringified, "")
     slice := strings.Split(stringified, "\n")
     generateTokenArray(slice)
-
     //first routine to be called must be compileClass
-    if !(compileClass()) {
+    if !compileClass() {
         raiseError("unable to compile class")
         return
     }
