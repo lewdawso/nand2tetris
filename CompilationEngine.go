@@ -56,12 +56,67 @@ func checkToken(token string) bool {
     return false
 }
 
+func checkIdentifier() bool {
+    re, err := regexp.Compile("^[a-zA-Z_][\\w]*$")
+    if err != nil {
+        os.Exit(1)
+    }
+    if !re.MatchString(current[1]) {
+        raiseError("invalid identifier")
+        return false
+    }
+    writeToken()
+    return true
+}
+
+func checkOpeningBrace() {
+    if !checkToken("{") {
+        raiseError("missing opening brace")
+        return false
+    }
+    writeToken()
+    return true
+}
+
+func checkClosingBrace() {
+    if !checkToken("}") {
+        raiseError("missing closing brace")
+        return false
+    }
+    writeToken()
+    return true
+}
+
+func checkOpeningBracket() {
+    if !checkToken("(") {
+        raiseError("missing opening bracket")
+        return false
+    }
+    writeToken()
+    return true
+}
+
+func checkClosingBracket() {
+    if !checkToken(")") {
+        raiseError("missing closing bracket")
+        return false
+    }
+    writeToken()
+    return true
+}
+
 func compileClass() bool {
 
-    if checkToken("class") {
-        writeOpen("class")
-        writeToken()
+    if !checkToken("class") {
+        return false
     }
+    writeOpen("class")
+    writeToken()
+
+    if !checkIdentifier() { return false }
+
+    if !checkOpeningBrace() { return false }
+    
     return true
 }
 
@@ -82,4 +137,5 @@ func main () {
         raiseError("unable to compile class")
         return
     }
+    fmt.Println(output)
 }
