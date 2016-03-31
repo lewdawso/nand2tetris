@@ -6,11 +6,15 @@ import (
     "io/ioutil"
     "strings"
     "regexp"
+    "sort"
 )
 
 var tokens [][]string
 var current []string
 var output []string
+
+var operators = []string{"+", "-", "*", "/", "&", "|", "<", ">", "="}
+var unaryOp = []string{"-", "~"}
 
 func generateTokenArray(slice []string) {
 
@@ -65,6 +69,15 @@ func checkTokenSlice(slice []string) bool {
     return false
 }
 
+func checkTokenTypeSlice(slice []string) bool {
+    for i := range slice {
+        if strings.Compare(slice[i], current[0]) == 0 {
+            return true
+        }
+    }
+    return false
+}
+
 func checkIdentifier() bool {
     re, err := regexp.Compile("^[a-zA-Z_][\\w]*$")
     if err != nil {
@@ -75,6 +88,17 @@ func checkIdentifier() bool {
         return false
     }
     writeToken()
+    return true
+}
+
+func checkIdentifierPassive() bool {
+    re, err := regexp.Compile("^[a-zA-Z_][\\w]*$")
+    if err != nil {
+        os.Exit(1)
+    }
+    if !re.MatchString(current[1]) {
+        return false
+    }
     return true
 }
 
@@ -123,11 +147,44 @@ func checkSemicolon() bool {
     return true
 }
 
+func checkTypeAndIdentifier() bool {
+    //check type
+    if (!checkTokenSlice([]string{"int", "char", "bool"}) && !checkIdentifierPassive()) {
+        raiseError("type specifier")
+        return false
+    }
+
+    writeToken()
+
+    if !checkIdentifier() {
+        return false
+    }
+    return true
+}
+
+func checkNextToken(token string) bool {
+    if strings.Compare(token, tokens[0][1]) == 0 {
+        return true
+    }
+    return false
+}
+
+func debug() {
+    fmt.Println("current: ", current[1])
+    fmt.Println("next: ", tokens[0][1])
+
+    for i := range output {
+        fmt.Println(output[i])
+    }
+}
+
 func compileClass() bool {
 
     if !checkToken("class") {
+        raiseError("missing class keyword to open")
         return false
     }
+
     writeOpen("class")
     writeToken()
 
@@ -142,6 +199,21 @@ func compileClass() bool {
         }
     }
 
+    for checkTokenSlice([]string{"constructor", "function", "method"}) {
+        if !compileSubroutine() {
+            raiseError("compileSubroutine")
+            return false
+        }
+    }
+
+    if !checkClosingBrace() { return false }
+
+    if len(tokens) != 0 {
+        raiseError("tokens remaining after class closed")
+        return false
+    }
+
+    writeClose("class")
     return true
 }
 
@@ -170,7 +242,418 @@ func compileClassVarDec() bool {
     if !checkSemicolon() { return false }
 
     writeClose("classVarDec")
+    return true
+}
 
+func compileSubroutine() bool {
+    writeOpen("subroutineDec")
+    writeToken()
+
+    //check return type
+    if !checkTokenSlice([]string{"void", "int", "char", "bool"}) && !checkIdentifier() {
+        raiseError("missing return type")
+        return false
+    }
+
+    writeToken()
+
+    //check subroutine name
+    if !checkIdentifier() {
+        raiseError("invalid identifier")
+        return false
+    }
+
+    if !checkOpeningBracket() { return false }
+
+    if !compileParameterList() {
+        raiseError("compileParameterList")
+        return false
+    }
+
+    if !checkClosingBracket() { return false }
+
+    writeOpen("subroutineBody")
+
+    if !checkOpeningBrace() { return false }
+
+    //possible variable declaration
+    for checkToken("var") {
+        if !compileVarDec() {
+            raiseError("compileVarDec")
+            return false
+        }
+    }
+
+    //compile statements
+    if !compileStatements() {
+        raiseError("compileStatements")
+        return false
+    }
+
+    if !checkClosingBrace() { return false }
+
+    writeClose("subroutineBody")
+    writeClose("subroutineDec")
+
+    return true
+}
+
+func compileParameterList() bool {
+    writeOpen("parameterList")
+
+    //no parameters
+    if checkToken(")") {
+        writeClose("parameterList")
+        return true
+    }
+
+    if !checkTypeAndIdentifier() {
+        raiseError("checkTypeAndIdentifier")
+        return false
+    }
+
+    for checkToken(",") {
+        writeToken()
+        if !checkTypeAndIdentifier() {
+            raiseError("checkTypeAndIdentifier")
+            return false
+        }
+    }
+
+    writeClose("parameterList")
+    return true
+}
+
+func compileVarDec() bool {
+    writeOpen("varDec")
+    writeToken()
+
+    if !checkTypeAndIdentifier() {
+        raiseError("checkTypeAndIdentifier")
+        return false
+    }
+
+    for checkToken(",") {
+        writeToken()
+        if !checkIdentifier() { return false }
+    }
+
+    if !checkSemicolon() { return false }
+
+    writeClose("varDec")
+    return true
+}
+
+func compileStatements() bool {
+    writeOpen("statements")
+    for checkTokenSlice([]string{"let", "if", "while", "do", "return"}) {
+
+        switch current[1] {
+            case "let":
+                if !compileLet() {
+                    raiseError("compileLet")
+                    return false
+                }
+                break
+            case "if":
+                if !compileIf() {
+                    raiseError("compileIf")
+                    return false
+                }
+                break
+            case "while":
+                if !compileWhile() {
+                    raiseError("compileWhile")
+                    return false
+                }
+                break
+            case "do":
+                if !compileDo() {
+                    raiseError("compileDo")
+                    return false
+                }
+                break
+            case "return":
+                if !compileReturn() {
+                    raiseError("compileReturn")
+                    return false
+                }
+                break
+            default:
+                raiseError("invalid statement keyword")
+                return false
+        }
+    }
+    writeClose("statements")
+    return true
+}
+
+func compileLet() bool {
+    writeOpen("compileLet")
+    writeToken()
+
+    if !checkIdentifier() { return false }
+
+    //potential expression
+    if checkToken("[") {
+        writeToken()
+
+        if !compileExpression() {
+            raiseError("compileExpression")
+            return false
+        }
+
+        if !checkToken("]") {
+            raiseError("missing closing ]")
+            return false
+        }
+        writeToken()
+    }
+
+    //equals expression
+    if !checkToken("=") {
+        raiseError("missing =")
+        return false
+    }
+
+    writeToken()
+
+    if !compileExpression() {
+        raiseError("compileExpression")
+        return false
+    }
+
+    if !checkSemicolon() { return false }
+
+    writeClose("letStatement")
+    return true
+}
+
+func compileIf() bool {
+    writeOpen("ifStatement")
+    writeToken()
+
+    if !checkOpeningBracket() { return false }
+    if !compileExpression() {
+        raiseError("compileExpression")
+        return false
+    }
+    if !checkClosingBracket() { return false }
+    if !checkOpeningBrace() { return false }
+    if !compileStatements() {
+        raiseError("compileStatements")
+        return false
+    }
+    if !checkClosingBrace() { return false }
+    if checkToken("else") {
+        if !checkOpeningBrace() { return false }
+        if !compileStatements() { return false }
+        if !checkClosingBrace() { return false }
+    }
+    writeClose("ifStatement")
+    return true
+}
+
+func compileWhile() bool {
+    writeOpen("whileStatement")
+    writeToken()
+
+    if !checkOpeningBracket() { return false }
+    if !compileExpression() {
+        raiseError("compileExpression")
+        return false
+    }
+    if !checkClosingBracket() { return false }
+    if !checkOpeningBrace() { return false }
+    if !compileStatements() {
+        raiseError("compileStatements")
+        return false }
+    if !checkClosingBrace() { return false }
+
+    writeClose("whileStatement")
+    return true
+}
+
+func compileDo() bool {
+    writeOpen("doStatement")
+    writeToken()
+
+    if !checkSubroutineCall() {
+        raiseError("subroutineCall")
+        return false
+    }
+    if !checkSemicolon() { return false }
+
+    writeClose("doStatement")
+    return true
+}
+
+func compileReturn() bool {
+    writeOpen("returnStatement")
+    writeToken()
+
+    //expression is optional
+    if checkSemicolon() {
+        writeClose("returnStatement")
+        return true
+    }
+
+    if !compileExpression() {
+        raiseError("compileExpression")
+        return true
+    }
+    if !checkSemicolon() {
+        return false
+    }
+
+    writeClose("returnStatement")
+    return true
+}
+
+func compileExpression() bool {
+    writeOpen("expression")
+
+    //an expression must contain at least one term
+    if !compileTerm() {
+        raiseError("compileTerm")
+        return false
+    }
+
+    //(op term)* (bit unecessary to to use binary search here but hey ho)
+    for {
+        i := sort.SearchStrings(operators, current[1])
+        if i < len(operators) {
+            if operators[i] == current[1] {
+                writeToken()
+                if !compileTerm() {
+                    raiseError("compileTerm")
+                    return false
+                }
+            }
+        } else {
+            break
+        }
+    }
+
+    writeClose("expression")
+    return true
+}
+
+func compileTerm() bool {
+    writeOpen("term")
+
+    //int, string or keyword
+    if checkTokenTypeSlice([]string{"integerConstant", "stringConstant", "keywordConstant"}) {
+        writeToken()
+        return true
+    }
+
+    //(expression)
+    if checkToken("(") {
+        if !compileExpression() {
+            raiseError("compileExpression")
+            return false
+        }
+        if !checkClosingBracket() {
+            return false
+        }
+        return true
+    }
+
+    //unaryOp term
+    for i := range unaryOp {
+        if strings.Compare(unaryOp[i], current[1]) == 0 {
+            writeToken()
+            if !compileTerm() {
+                raiseError("compileTerm")
+                return false
+            }
+            return true
+        }
+    }
+
+    //can now only have varName | varName [expression] | subroutineCall
+    //Al of these terms begin with varName => look ahead one token to
+    //differentiate
+
+    if checkNextToken("[") {
+        if !checkIdentifier() { return false }
+        writeToken()
+
+        if !compileExpression() { 
+            raiseError("compileExpression")
+            return false
+        }
+
+        if !checkToken("]") {
+            raiseError("missing ]")
+            return false
+        }
+        writeToken()
+
+        return true
+    }
+
+    if checkNextToken("(") || checkNextToken(".") {
+        if !checkSubroutineCall() {
+            raiseError("checkSubroutineCall")
+            return false
+        }
+        return true
+    }
+
+    if !checkIdentifier() { return false }
+
+    writeClose("term")
+    return true
+}
+
+func checkSubroutineCall() bool {
+    if !checkIdentifier() { return false }
+
+    //could be subroutineName(blargh) | class/var.subroutine(blargh)
+
+    if checkToken(".") {
+        writeToken()
+        if !checkIdentifier() { return false }
+    }
+
+    if !checkOpeningBracket() { return false }
+    if !compileExpressionList() { 
+        raiseError("compileExpressionList")
+        return false
+    }
+    if !checkClosingBracket() { return false }
+
+    return true
+}
+
+func compileExpressionList() bool {
+    writeOpen("expressionList")
+    //first off, check if we have an empty list
+    if checkToken(")") {
+        writeClose("expressionList")
+        return true
+    }
+
+    //now we know we have to compile at least one expression
+    if !compileExpression() {
+        raiseError("compileExpression")
+        return false
+    }
+
+    for !checkToken(")") {
+        if !checkToken(",") {
+            raiseError("missing comma")
+            return false
+        }
+        writeToken()
+        if !compileExpression() {
+            raiseError("compileExpression")
+            return false
+        }
+    }
+    writeClose("expressionList")
     return true
 }
 
@@ -185,10 +668,13 @@ func main () {
     stringified = re.ReplaceAllString(stringified, "")
     slice := strings.Split(stringified, "\n")
     generateTokenArray(slice)
+
+    //sort op slice
+    sort.Strings(operators)
+
     //first routine to be called must be compileClass
     if !compileClass() {
         raiseError("unable to compile class")
-        return
     }
-    fmt.Println(output)
+    debug()
 }
