@@ -13,7 +13,7 @@ var tokens [][]string
 var current []string
 var output []string
 
-var operators = []string{"+", "-", "*", "/", "&", "|", "<", ">", "="}
+var operators = []string{"+", "-", "*", "/", "&amp;", "|", "&lt;", "&gt;", "="}
 var unaryOp = []string{"-", "~"}
 
 func generateTokenArray(slice []string) {
@@ -222,7 +222,7 @@ func compileClassVarDec() bool {
     writeToken()
 
     //check type
-    if (!checkTokenSlice([]string{"int, char, bool"}) && !checkIdentifier()) {
+    if (!checkTokenSlice([]string{"int, char, bool"}) && !checkIdentifierPassive()) {
         raiseError("missing type specifier")
         return false
     }
@@ -250,7 +250,7 @@ func compileSubroutine() bool {
     writeToken()
 
     //check return type
-    if !checkTokenSlice([]string{"void", "int", "char", "bool"}) && !checkIdentifier() {
+    if !checkTokenSlice([]string{"void", "int", "char", "bool"}) && !checkIdentifierPassive() {
         raiseError("missing return type")
         return false
     }
@@ -493,7 +493,8 @@ func compileReturn() bool {
     writeToken()
 
     //expression is optional
-    if checkSemicolon() {
+    if checkToken(";") {
+        writeToken()
         writeClose("returnStatement")
         return true
     }
@@ -502,9 +503,7 @@ func compileReturn() bool {
         raiseError("compileExpression")
         return true
     }
-    if !checkSemicolon() {
-        return false
-    }
+    if !checkSemicolon() { return false }
 
     writeClose("returnStatement")
     return true
@@ -549,7 +548,8 @@ func compileTerm() bool {
     }
 
     //(expression)
-    if checkOpeningBracket() {
+    if checkToken("(") {
+        writeToken()
         if !compileExpression() {
             raiseError("compileExpression")
             return false
@@ -691,6 +691,7 @@ func main () {
     if err != nil {
         os.Exit(1)
     }
+    defer f.Close()
 
     for i := range output {
         f.WriteString(output[i])
