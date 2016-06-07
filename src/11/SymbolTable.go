@@ -19,7 +19,18 @@ type Symbol struct {
     index int
 }
 
-func inits() {
+type Kind int
+
+const (
+    NONE Kind = iota
+    STATIC
+    FIELD
+    ARG
+    VAR
+)
+
+
+func init() {
     classSymbolTable = make(map[string]Symbol)
     subroutineSymbolTable = make(map[string]Symbol)
     indices := make(map[Kind]int)
@@ -30,15 +41,9 @@ func inits() {
     indices[VAR] = 0
 }
 
-type Kind int
-
-const (
-    NONE Kind = iota
-    STATIC
-    FIELD
-    ARG
-    VAR
-)
+func startSubroutine() {
+    subroutineSymbolTable = make(map[string]Symbol)
+}
 
 func define(name string, _type string, kind Kind) {
     //find the count of this kind of variable
@@ -62,7 +67,7 @@ func VarCount(kind Kind) int {
 }
 
 func KindOf(name string) Kind {
-    if s := classSymbolTable[name] ; s.kind != NONE {
+    if !EmptySymbol(classSymbolTable[name]) {
         return s.kind
     } else {
         return subroutineSymbolTable[name].kind
@@ -91,9 +96,3 @@ func EmptySymbol(s Symbol) bool {
     }
     return false
 }
-
-func main() {
-    inits()
-    r := IndexOf("blargh")
-}
-
