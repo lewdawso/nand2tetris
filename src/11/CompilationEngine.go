@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"symtable"
 )
 
 var tokens [][]string
@@ -15,6 +16,9 @@ var output []string
 
 var operators = []string{"+", "-", "*", "/", "&amp;", "|", "&lt;", "&gt;", "="}
 var unaryOp = []string{"-", "~"}
+
+var currentClass string
+var currentSubroutine string
 
 func generateTokenArray(slice []string) {
 
@@ -78,17 +82,16 @@ func checkTokenTypeSlice(slice []string) bool {
 	return false
 }
 
-func checkIdentifier() bool {
+func checkIdentifier() string {
 	re, err := regexp.Compile("^[a-zA-Z_][\\w]*$")
 	if err != nil {
 		os.Exit(1)
 	}
-	if !re.MatchString(current[1]) {
+	if !re.MatchString(current()) {
 		raiseError("invalid identifier")
-		return false
+		return ""
 	}
-	writeToken()
-	return true
+	return current()
 }
 
 func checkIdentifierPassive() bool {
@@ -143,7 +146,7 @@ func checkSemicolon() bool {
 		raiseError("missing semicolon")
 		return false
 	}
-	writeToken()
+	advance()
 	return true
 }
 
@@ -178,12 +181,18 @@ func debug() {
 	}
 }
 
+func current() string {
+	return current[1]
+}
+
 func compileClass() bool {
 
 	if !checkToken("class") {
 		raiseError("missing class keyword to open")
 		return false
 	}
+
+	currentClass = current()
 
 	writeOpen("class")
 	writeToken()
@@ -224,8 +233,10 @@ func compileClass() bool {
 }
 
 func compileClassVarDec() bool {
-	writeOpen("classVarDec")
-	writeToken()
+
+	kind := current()
+
+	advance()
 
 	//check type
 	if !checkTokenSlice([]string{"int, char, bool"}) && !checkIdentifierPassive() {
@@ -233,25 +244,31 @@ func compileClassVarDec() bool {
 		return false
 	}
 
-	writeToken()
+	_type := current()
 
-	if !checkIdentifier() {
+	advance()
+
+	if name := checkIdentifier(); name == "" {
 		return false
 	}
 
+	advance()
+
+	symtable.Define(name, _type, kind)
+
 	//deal with (',', varName)*
 	for checkToken(",") {
-		writeToken()
-		if !checkIdentifier() {
+		advance()
+		if name := checkIdentifier(); name == "" {
 			return false
 		}
+		symtable.Define(name, _type, kind)
 	}
 
 	if !checkSemicolon() {
 		return false
 	}
 
-	writeClose("classVarDec")
 	return true
 }
 
