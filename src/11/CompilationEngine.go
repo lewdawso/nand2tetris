@@ -3,11 +3,12 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"nand2tetris/symtable"
+	"nand2tetris/vmwriter"
 	"os"
 	"regexp"
 	"sort"
 	"strings"
-	"symtable"
 )
 
 var tokens [][]string
@@ -19,6 +20,9 @@ var unaryOp = []string{"-", "~"}
 
 var currentClass string
 var currentSubroutine string
+
+var kind symtable.Kind
+var _type string
 
 func generateTokenArray(slice []string) {
 
@@ -82,16 +86,16 @@ func checkTokenTypeSlice(slice []string) bool {
 	return false
 }
 
-func checkIdentifier() string {
+func checkIdentifier() bool {
 	re, err := regexp.Compile("^[a-zA-Z_][\\w]*$")
 	if err != nil {
 		os.Exit(1)
 	}
-	if !re.MatchString(current()) {
+	if !re.MatchString(current[1]) {
 		raiseError("invalid identifier")
-		return ""
+		return false
 	}
-	return current()
+	return true
 }
 
 func checkIdentifierPassive() bool {
@@ -110,7 +114,7 @@ func checkOpeningBrace() bool {
 		raiseError("missing opening brace")
 		return false
 	}
-	writeToken()
+	advance()
 	return true
 }
 
@@ -157,11 +161,17 @@ func checkTypeAndIdentifier() bool {
 		return false
 	}
 
-	writeToken()
+	_type = getCurrent()
+	advance()
 
 	if !checkIdentifier() {
 		return false
 	}
+
+	name := getCurrent()
+	symtable.Define(name, _type, kind)
+	advance()
+
 	return true
 }
 
@@ -181,7 +191,7 @@ func debug() {
 	}
 }
 
-func current() string {
+func getCurrent() string {
 	return current[1]
 }
 
@@ -192,14 +202,14 @@ func compileClass() bool {
 		return false
 	}
 
-	currentClass = current()
-
-	writeOpen("class")
-	writeToken()
+	advance()
 
 	if !checkIdentifier() {
 		return false
 	}
+
+	currentClass = getCurrent()
+	advance()
 
 	if !checkOpeningBrace() {
 		return false
@@ -234,7 +244,7 @@ func compileClass() bool {
 
 func compileClassVarDec() bool {
 
-	kind := current()
+	kind = symtable.KindLookup[getCurrent()]
 
 	advance()
 
@@ -244,14 +254,14 @@ func compileClassVarDec() bool {
 		return false
 	}
 
-	_type := current()
-
+	_type := getCurrent()
 	advance()
 
-	if name := checkIdentifier(); name == "" {
+	if !checkIdentifier() {
 		return false
 	}
 
+	name := getCurrent()
 	advance()
 
 	symtable.Define(name, _type, kind)
@@ -259,10 +269,12 @@ func compileClassVarDec() bool {
 	//deal with (',', varName)*
 	for checkToken(",") {
 		advance()
-		if name := checkIdentifier(); name == "" {
+		if !checkIdentifier() {
 			return false
 		}
+		name = getCurrent()
 		symtable.Define(name, _type, kind)
+		advance()
 	}
 
 	if !checkSemicolon() {
@@ -273,8 +285,15 @@ func compileClassVarDec() bool {
 }
 
 func compileSubroutine() bool {
-	writeOpen("subroutineDec")
-	writeToken()
+
+	symtable.StartSubroutine()
+
+	//first argument of a method is the object itself
+	if getCurrent() == "method" {
+		symtable.Define("this", currentClass, symtable.ARG)
+	}
+
+	advance()
 
 	//check return type
 	if !checkTokenSlice([]string{"void", "int", "char", "bool"}) && !checkIdentifierPassive() {
@@ -282,7 +301,7 @@ func compileSubroutine() bool {
 		return false
 	}
 
-	writeToken()
+	advance()
 
 	//check subroutine name
 	if !checkIdentifier() {
@@ -290,10 +309,14 @@ func compileSubroutine() bool {
 		return false
 	}
 
+	currentSubroutine = getCurrent()
+	advance()
+
 	if !checkOpeningBracket() {
 		return false
 	}
 
+	kind = symtable.ARG
 	if !compileParameterList() {
 		raiseError("compileParameterList")
 		return false
@@ -303,13 +326,12 @@ func compileSubroutine() bool {
 		return false
 	}
 
-	writeOpen("subroutineBody")
-
 	if !checkOpeningBrace() {
 		return false
 	}
 
 	//possible variable declaration
+	kind = symtable.VAR
 	for checkToken("var") {
 		if !compileVarDec() {
 			raiseError("compileVarDec")
@@ -334,11 +356,9 @@ func compileSubroutine() bool {
 }
 
 func compileParameterList() bool {
-	writeOpen("parameterList")
 
 	//no parameters
 	if checkToken(")") {
-		writeClose("parameterList")
 		return true
 	}
 
@@ -348,20 +368,18 @@ func compileParameterList() bool {
 	}
 
 	for checkToken(",") {
-		writeToken()
+		advance()
 		if !checkTypeAndIdentifier() {
 			raiseError("checkTypeAndIdentifier")
 			return false
 		}
 	}
 
-	writeClose("parameterList")
 	return true
 }
 
 func compileVarDec() bool {
-	writeOpen("varDec")
-	writeToken()
+	advance()
 
 	if !checkTypeAndIdentifier() {
 		raiseError("checkTypeAndIdentifier")
@@ -369,22 +387,23 @@ func compileVarDec() bool {
 	}
 
 	for checkToken(",") {
-		writeToken()
+		advance()
 		if !checkIdentifier() {
 			return false
 		}
+		name := getCurrent()
+		symtable.Define(name, _type, kind)
+		advance()
 	}
 
 	if !checkSemicolon() {
 		return false
 	}
 
-	writeClose("varDec")
 	return true
 }
 
 func compileStatements() bool {
-	writeOpen("statements")
 	for checkTokenSlice([]string{"let", "if", "while", "do", "return"}) {
 
 		switch current[1] {
@@ -428,16 +447,20 @@ func compileStatements() bool {
 }
 
 func compileLet() bool {
-	writeOpen("compileLet")
-	writeToken()
+	advance()
 
 	if !checkIdentifier() {
 		return false
 	}
 
+	varName := getCurrent()
+
 	//potential expression
 	if checkToken("[") {
-		writeToken()
+
+		//push array variable onto the stack (base address)
+		vmwriter.WritePush(symtable.KindOf)
+		advance()
 
 		if !compileExpression() {
 			raiseError("compileExpression")
@@ -448,7 +471,7 @@ func compileLet() bool {
 			raiseError("missing closing ]")
 			return false
 		}
-		writeToken()
+		advance()
 	}
 
 	//equals expression
@@ -457,7 +480,7 @@ func compileLet() bool {
 		return false
 	}
 
-	writeToken()
+	advance()
 
 	if !compileExpression() {
 		raiseError("compileExpression")

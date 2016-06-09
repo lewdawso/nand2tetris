@@ -7,11 +7,14 @@ package symtable
 
 import (
 	"fmt"
+	"os"
 )
 
 var classSymbolTable map[string]Symbol
 var subroutineSymbolTable map[string]Symbol
 var indices map[Kind]int
+
+var KindLookup map[string]Kind
 
 type Symbol struct {
 	_type string
@@ -38,9 +41,14 @@ func init() {
 	indices[FIELD] = 0
 	indices[ARG] = 0
 	indices[VAR] = 0
+
+	KindLookup["static"] = STATIC
+	KindLookup["field"] = FIELD
+	KindLookup["arg"] = ARG
+	KindLookup["var"] = VAR
 }
 
-func startSubroutine() {
+func StartSubroutine() {
 	subroutineSymbolTable = make(map[string]Symbol)
 }
 
@@ -58,6 +66,7 @@ func Define(name string, _type string, kind Kind) {
 		subroutineSymbolTable[name] = symbol
 	} else {
 		fmt.Println("unrecognised kind")
+		os.Exit(1)
 	}
 }
 
