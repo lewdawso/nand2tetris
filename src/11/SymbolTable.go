@@ -54,8 +54,8 @@ func StartSubroutine() {
 
 func Define(name string, _type string, kind Kind) {
 	//find the count of this kind of variable
-	index := VarCount(kind) + 1
-	indices[kind] = index
+	index := VarCount(kind)
+	indices[kind] = index + 1
 
 	//define Symbol variable
 	symbol := Symbol{_type, kind, index}
