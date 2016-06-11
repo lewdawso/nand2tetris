@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	"nand2tetris/symtable"
-	"nand2tetris/vmwriter"
+	"nand2tetris/SymTable"
+	"nand2tetris/VMWriter"
 	"os"
 	"regexp"
 	"sort"
@@ -193,6 +193,21 @@ func debug() {
 
 func getCurrent() string {
 	return current[1]
+}
+
+func getSegment(kind symtable.Kind) vmwriter.Segment {
+	switch kind {
+	case symtable.STATIC:
+		return vmwriter.STATIC
+	case symtable.FIELD:
+		return vmwriter.THIS
+	case symtable.ARG:
+		return vmwriter.ARG
+	case symtable.VAR:
+		return vmwriter.LOCAL
+	}
+	//FIX
+	return vmwriter.LOCAL
 }
 
 func compileClass() bool {
@@ -447,6 +462,7 @@ func compileStatements() bool {
 }
 
 func compileLet() bool {
+	offset := false
 	advance()
 
 	if !checkIdentifier() {
@@ -454,12 +470,14 @@ func compileLet() bool {
 	}
 
 	varName := getCurrent()
+	advance()
 
 	//potential expression
 	if checkToken("[") {
+		offset = true
 
-		//push array variable onto the stack (base address)
-		vmwriter.WritePush(symtable.KindOf)
+		//push array variable onto the stack (its base address)
+		vmwriter.WritePush(getSegment(symtable.KindOf(varName)), symtable.IndexOf(varName))
 		advance()
 
 		if !compileExpression() {
@@ -472,6 +490,12 @@ func compileLet() bool {
 			return false
 		}
 		advance()
+
+		//add output of expression to base address which was pushed onto the
+		//stack
+
+		vmwriter.WriteArithmetic(vmwriter.ADD)
+
 	}
 
 	//equals expression
@@ -479,7 +503,6 @@ func compileLet() bool {
 		raiseError("missing =")
 		return false
 	}
-
 	advance()
 
 	if !compileExpression() {
@@ -491,7 +514,24 @@ func compileLet() bool {
 		return false
 	}
 
-	writeClose("letStatement")
+	if offset {
+		//stack looks like this:
+		// base + offset
+		// expression result
+
+		//store expression result in TEMP
+		vmwriter.WritePop(vmwriter.TEMP, 0)
+		//align THAT with (base + offset)
+		vmwriter.WritePop(vmwriter.POINTER, 1)
+		//push result to stack
+		vmwriter.WritePush(vmwriter.TEMP, 0)
+		//pop result to THAT
+		vmwriter.WritePop(vmwriter.THAT, 0)
+	} else {
+		//stack looks like this:
+		//expression result
+		vmwriter.WritePush(getSegment(symtable.KindOf(varName)), symtable.IndexOf(varName))
+	}
 	return true
 }
 
