@@ -84,7 +84,7 @@ func WritePop(s Segment, i int) {
 	}
 }
 
-func WriteArithmethic(c Command) {
+func WriteArithmetic(c Command) {
 
 	if str := CommandLookup[c]; str == "" {
 		fmt.Println("invalid command")
