@@ -126,7 +126,7 @@ func checkClosingBrace() bool {
 		raiseError("missing closing brace")
 		return false
 	}
-	writeToken()
+	advance()
 	return true
 }
 
@@ -135,7 +135,7 @@ func checkOpeningBracket() bool {
 		raiseError("missing opening bracket")
 		return false
 	}
-	writeToken()
+	advance()
 	return true
 }
 
@@ -144,7 +144,7 @@ func checkClosingBracket() bool {
 		raiseError("missing closing bracket")
 		return false
 	}
-	writeToken()
+	advance()
 	return true
 }
 
@@ -593,8 +593,11 @@ func compileIf() bool {
 }
 
 func compileWhile() bool {
-	writeOpen("whileStatement")
-	writeToken()
+	advance()
+	loop := genLabel()
+	exit := genLabel()
+
+	vmwriter.WriteLabel(loop)
 
 	if !checkOpeningBracket() {
 		return false
@@ -606,6 +609,10 @@ func compileWhile() bool {
 	if !checkClosingBracket() {
 		return false
 	}
+
+	vmwriter.WriteArithmetic(vmwriter.SegmentLookup(vmwriter.NOT))
+	vmwriter.WriteIf(exit)
+
 	if !checkOpeningBrace() {
 		return false
 	}
@@ -617,7 +624,9 @@ func compileWhile() bool {
 		return false
 	}
 
-	writeClose("whileStatement")
+	vmwriter.WriteGoto(loop)
+	vmwriter.WriteLabel(exit)
+
 	return true
 }
 
