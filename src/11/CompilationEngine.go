@@ -631,8 +631,7 @@ func compileWhile() bool {
 }
 
 func compileDo() bool {
-	writeOpen("doStatement")
-	writeToken()
+	advance()
 
 	if !checkSubroutineCall() {
 		raiseError("subroutineCall")
@@ -642,18 +641,17 @@ func compileDo() bool {
 		return false
 	}
 
-	writeClose("doStatement")
 	return true
 }
 
 func compileReturn() bool {
-	writeOpen("returnStatement")
-	writeToken()
+	advance()
 
 	//expression is optional
 	if checkToken(";") {
-		writeToken()
-		writeClose("returnStatement")
+		vmwriter.WritePush(vmwriter.SegmentLookup[vmwriter.CONST], 0)
+		vmwriter.WriteReturn()
+		advance()
 		return true
 	}
 
@@ -665,7 +663,7 @@ func compileReturn() bool {
 		return false
 	}
 
-	writeClose("returnStatement")
+	vmwriter.WriteReturn()
 	return true
 }
 
