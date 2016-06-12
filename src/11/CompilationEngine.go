@@ -8,6 +8,7 @@ import (
 	"os"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -23,6 +24,8 @@ var currentSubroutine string
 
 var kind symtable.Kind
 var _type string
+
+var labelCount int
 
 func generateTokenArray(slice []string) {
 
@@ -208,6 +211,12 @@ func getSegment(kind symtable.Kind) vmwriter.Segment {
 	}
 	//FIX
 	return vmwriter.LOCAL
+}
+
+func genLabel() string {
+	count := labelCount
+	labelCount++
+	return "LABEL" + strconv.Itoa(count)
 }
 
 func compileClass() bool {
@@ -536,8 +545,9 @@ func compileLet() bool {
 }
 
 func compileIf() bool {
-	writeOpen("ifStatement")
-	writeToken()
+	advance()
+	start := genLabel()
+	end := genLabel()
 
 	if !checkOpeningBracket() {
 		return false
@@ -549,6 +559,10 @@ func compileIf() bool {
 	if !checkClosingBracket() {
 		return false
 	}
+
+	vmwriter.WriteArithmetic(vmwriter.segmentLookup[vmwriter.NOT])
+	vmwriter.WriteIf(start)
+
 	if !checkOpeningBrace() {
 		return false
 	}
@@ -559,6 +573,10 @@ func compileIf() bool {
 	if !checkClosingBrace() {
 		return false
 	}
+
+	vmwriter.WriteGoto(end)
+	vmwriter.WriteLabel(start)
+
 	if checkToken("else") {
 		if !checkOpeningBrace() {
 			return false
@@ -570,7 +588,7 @@ func compileIf() bool {
 			return false
 		}
 	}
-	writeClose("ifStatement")
+	vmwriter.WriteLabel(end)
 	return true
 }
 
