@@ -373,9 +373,6 @@ func compileSubroutine() bool {
 		return false
 	}
 
-	writeClose("subroutineBody")
-	writeClose("subroutineDec")
-
 	return true
 }
 
@@ -539,7 +536,7 @@ func compileLet() bool {
 	} else {
 		//stack looks like this:
 		//expression result
-		vmwriter.WritePush(getSegment(symtable.KindOf(varName)), symtable.IndexOf(varName))
+		vmwriter.WritePop(getSegment(symtable.KindOf(varName)), symtable.IndexOf(varName))
 	}
 	return true
 }
@@ -775,20 +772,44 @@ func checkSubroutineCall() bool {
 		return false
 	}
 
+	var args int = 0
+	subroutine := getCurrent()
+	advance()
+
 	//could be subroutineName(blargh) | class/var.subroutine(blargh)
 
 	if checkToken(".") {
-		writeToken()
+		advance()
 		if !checkIdentifier() {
 			return false
 		}
+		object := subroutine
+		subroutine := getCurrent()
+
+		//"object" could be a class or a variable (instance of a class)
+		_type := symbtable.TypeOf(object)
+		if checkTokenSlice(_type, []string{"int", "boolean", "char", "void"}) {
+			raiseError("not a valid object type")
+		} else if _type == "" {
+			//it's a class
+			name := object + "." + subroutine
+		} else {
+			//it's a instance of a class
+			args++
+			vmwriter.Push(vmwriter.SegmentLookup[_type], symtable.IndexOf(object))
+			name := _type + "." + subroutine
+		}
+	} else {
+		name := currentClass + "." + subroutine
+		args++
+		vmwriter.Push(vmwriter.POINTER, 0)
 	}
 
 	if !checkOpeningBracket() {
 		return false
 	}
 
-	if !compileExpressionList() {
+	if additional = compileExpressionList(); additional == -1 {
 		raiseError("compileExpressionList")
 		return false
 	}
@@ -796,36 +817,43 @@ func checkSubroutineCall() bool {
 		return false
 	}
 
+	args += additional
+	vmwriter.WriteCall(name, args)
 	return true
 }
 
-func compileExpressionList() bool {
-	writeOpen("expressionList")
+func compileExpressionList() int {
+
+	var args int
+
 	//first off, check if we have an empty list
 	if checkToken(")") {
-		writeClose("expressionList")
 		return true
 	}
+
+	advance()
 
 	//now we know we have to compile at least one expression
 	if !compileExpression() {
 		raiseError("compileExpression")
-		return false
+		return -1
 	}
+
+	args++
 
 	for !checkToken(")") {
 		if !checkToken(",") {
 			raiseError("missing comma")
-			return false
+			return -1
 		}
-		writeToken()
+		advance()
 		if !compileExpression() {
 			raiseError("compileExpression")
-			return false
+			return -1
 		}
+		args++
 	}
-	writeClose("expressionList")
-	return true
+	return args
 }
 
 func main() {
