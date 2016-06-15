@@ -91,11 +91,13 @@ func TypeOf(name string) string {
 	}
 }
 
-func IndexOf(name string) Symbol {
-	if s := classSymbolTable[name]; s.index == 0 {
-		return s
+func IndexOf(name string) int {
+	if s := classSymbolTable[name]; !EmptySymbol(s) {
+		return s.index
+	} else if s := subroutineSymbolTable[name]; !EmptySymbol(s) {
+		return s.index
 	} else {
-		return subroutineSymbolTable[name]
+		return -1
 	}
 }
 
