@@ -665,7 +665,6 @@ func compileReturn() bool {
 }
 
 func compileExpression() bool {
-	writeOpen("expression")
 	//an expression must contain at least one term
 	if !compileTerm() {
 		raiseError("compileTerm")
@@ -676,12 +675,37 @@ func compileExpression() bool {
 	op := true
 	for op {
 		for i := range operators {
-			if strings.Compare(operators[i], current[1]) == 0 {
+			if checkToken(operators[i]) {
 				op = true
-				writeToken()
+				//store the operator until the next term is pushed to the stack
+				operator := getCurrent()
+				advance()
 				if !compileTerm() {
 					raiseError("compileTerm")
 					return false
+				}
+				//now write the operator code
+				switch operator {
+				case "+":
+					vmwriter.WriteArithmetic(vmwriter.ADD)
+				case "=":
+					vmwriter.WriteArithmetic(vmwriter.SUB)
+				case "*":
+					//hmm
+				case "/":
+					//hmm
+				case "&amp":
+					vmwriter.WriteArithmetic(vmwriter.AND)
+				case "|":
+					vmwriter.WriteArithmetic(vmwriter.OR)
+				case "&lt":
+					vmwriter.WriteArithmetic(vmwriter.LT)
+				case "&gt":
+					vmwriter.WriteArithmetic(vmwriter.GT)
+				case "=":
+					vmwriter.WriteArithmetic(vmwriter.EQ)
+				default:
+					raiseError("unknown operator")
 				}
 				break
 			}
@@ -689,7 +713,6 @@ func compileExpression() bool {
 		}
 	}
 
-	writeClose("expression")
 	return true
 }
 
@@ -828,7 +851,7 @@ func compileExpressionList() int {
 
 	//first off, check if we have an empty list
 	if checkToken(")") {
-		return true
+		return 0
 	}
 
 	advance()
