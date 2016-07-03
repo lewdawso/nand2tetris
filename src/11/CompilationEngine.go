@@ -557,7 +557,7 @@ func compileIf() bool {
 		return false
 	}
 
-	vmwriter.WriteArithmetic(vmwriter.segmentLookup[vmwriter.NOT])
+	vmwriter.WriteArithmetic(vmwriter.SegmentLookup[vmwriter.NOT])
 	vmwriter.WriteIf(start)
 
 	if !checkOpeningBrace() {
@@ -717,17 +717,44 @@ func compileExpression() bool {
 }
 
 func compileTerm() bool {
-	writeOpen("term")
 
 	//int, string or keyword
 	if checkTokenTypeSlice([]string{"integerConstant", "stringConstant", "keywordConstant"}) {
-		writeToken()
+		switch current[0] {
+		case "integerConstant":
+			vmwriter.WritePush(vmwriter.CONST, current[1])
+		case "stringConstant":
+			str := getCurrent()
+			//push length of string onto stack
+			vmwriter.WritePush(vmwriter.CONST, len(str))
+			//call String.new() which has 1 argument
+			vmwriter.WriteCall("String.new", 1)
+			for _, char := range str {
+				vmwriter.WritePush(vmwriter.CONST, char)
+				//2 arguments because first argument is the object itself (this)
+				vmwriter.WriteCall("String.appendChar", 2)
+			}
+		case "keywordConstant":
+			if current[1] == "true" {
+				vmwriter.WritePush(vmwriter.CONST, 1)
+				vmwriter.WriteArithmetic(vmwriter.NOT)
+			} else if current[1] == "false" {
+				vmwriter.WritePush(vmwriter.CONST, 0)
+			} else {
+				raiseError("invalid keywordConstant value")
+				return false
+			}
+		default:
+			raiseError("unknown type qualifier")
+			return false
+		}
+		advance()
 		return true
 	}
 
 	//(expression)
 	if checkToken("(") {
-		writeToken()
+		advance()
 		if !compileExpression() {
 			raiseError("compileExpression")
 			return false
@@ -741,9 +768,20 @@ func compileTerm() bool {
 	//unaryOp term
 	for i := range unaryOp {
 		if strings.Compare(unaryOp[i], current[1]) == 0 {
-			writeToken()
+			var op string = getCurrent()
+
+			advance()
 			if !compileTerm() {
 				raiseError("compileTerm")
+				return false
+			}
+			switch op {
+			case "-":
+				vmwriter.WriteArithmetic(vmwriter.NEG)
+			case "~":
+				vmwriter.WriteArithmetic(vmwriter.NOT)
+			default:
+				raiseError("unknown unary operator")
 				return false
 			}
 			return true
@@ -751,14 +789,17 @@ func compileTerm() bool {
 	}
 
 	//can now only have varName | varName [expression] | subroutineCall
-	//Al of these terms begin with varName => look ahead one token to
+	//All of these terms begin with varName => look ahead one token to
 	//differentiate
 
 	if checkNextToken("[") {
 		if !checkIdentifier() {
 			return false
 		}
-		writeToken()
+
+		varName := getCurrent()
+		vmwriter.WritePush(symtable.KindOf(varName), symtable.IndexOf(varName))
+		advance()
 
 		if !compileExpression() {
 			raiseError("compileExpression")
@@ -769,8 +810,18 @@ func compileTerm() bool {
 			raiseError("missing ]")
 			return false
 		}
-		writeToken()
+		advance()
 
+		//stack now looks like this
+		//varName
+		//expression result
+
+		//ADD
+		vmwriter.WriteArithmetic(vmwriter.ADD)
+		//set THAT to varName + offset
+		vmwriter.WritePop(vmwriter.POINTER, 1)
+		//push value to the stack
+		vmwriter.WritePush(vmwriter.THAT, 0)
 		return true
 	}
 
@@ -786,7 +837,9 @@ func compileTerm() bool {
 		return false
 	}
 
-	writeClose("term")
+	vmwriter.WritePush(symtable.KindOf(getCurrent()), symtable.IndexOf(getCurrent()))
+	advance()
+
 	return true
 }
 
