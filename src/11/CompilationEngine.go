@@ -89,6 +89,15 @@ func checkTokenTypeSlice(slice []string) bool {
 	return false
 }
 
+func checkTokenTypeSliceCustom(_type string, slice []string) bool {
+	for i := range slice {
+		if strings.Compare(slice[i], _type) == 0 {
+			return true
+		}
+	}
+	return false
+}
+
 func checkIdentifier() bool {
 	re, err := regexp.Compile("^[a-zA-Z_][\\w]*$")
 	if err != nil {
@@ -196,6 +205,14 @@ func debug() {
 
 func getCurrent() string {
 	return current[1]
+}
+
+func getCurrentInt() int {
+	n, err := strconv.Atoi(current[1])
+	if err != nil {
+		os.Exit(1)
+	}
+	return n
 }
 
 func getSegment(kind symtable.Kind) vmwriter.Segment {
@@ -557,7 +574,7 @@ func compileIf() bool {
 		return false
 	}
 
-	vmwriter.WriteArithmetic(vmwriter.SegmentLookup[vmwriter.NOT])
+	vmwriter.WriteArithmetic(vmwriter.NOT)
 	vmwriter.WriteIf(start)
 
 	if !checkOpeningBrace() {
@@ -607,7 +624,7 @@ func compileWhile() bool {
 		return false
 	}
 
-	vmwriter.WriteArithmetic(vmwriter.SegmentLookup(vmwriter.NOT))
+	vmwriter.WriteArithmetic(vmwriter.NOT)
 	vmwriter.WriteIf(exit)
 
 	if !checkOpeningBrace() {
@@ -646,7 +663,7 @@ func compileReturn() bool {
 
 	//expression is optional
 	if checkToken(";") {
-		vmwriter.WritePush(vmwriter.SegmentLookup[vmwriter.CONST], 0)
+		vmwriter.WritePush(vmwriter.CONST, 0)
 		vmwriter.WriteReturn()
 		advance()
 		return true
@@ -688,7 +705,7 @@ func compileExpression() bool {
 				switch operator {
 				case "+":
 					vmwriter.WriteArithmetic(vmwriter.ADD)
-				case "=":
+				case "-":
 					vmwriter.WriteArithmetic(vmwriter.SUB)
 				case "*":
 					//hmm
@@ -722,7 +739,7 @@ func compileTerm() bool {
 	if checkTokenTypeSlice([]string{"integerConstant", "stringConstant", "keywordConstant"}) {
 		switch current[0] {
 		case "integerConstant":
-			vmwriter.WritePush(vmwriter.CONST, current[1])
+			vmwriter.WritePush(vmwriter.CONST, getCurrentInt())
 		case "stringConstant":
 			str := getCurrent()
 			//push length of string onto stack
@@ -730,8 +747,9 @@ func compileTerm() bool {
 			//call String.new() which has 1 argument
 			vmwriter.WriteCall("String.new", 1)
 			for _, char := range str {
-				vmwriter.WritePush(vmwriter.CONST, char)
+				vmwriter.WritePush(vmwriter.CONST, int(char))
 				//2 arguments because first argument is the object itself (this)
+				//which is left on the stack after the call to String.new
 				vmwriter.WriteCall("String.appendChar", 2)
 			}
 		case "keywordConstant":
@@ -798,7 +816,7 @@ func compileTerm() bool {
 		}
 
 		varName := getCurrent()
-		vmwriter.WritePush(symtable.KindOf(varName), symtable.IndexOf(varName))
+		vmwriter.WritePush(getSegment(symtable.KindOf(varName)), symtable.IndexOf(varName))
 		advance()
 
 		if !compileExpression() {
@@ -837,7 +855,7 @@ func compileTerm() bool {
 		return false
 	}
 
-	vmwriter.WritePush(symtable.KindOf(getCurrent()), symtable.IndexOf(getCurrent()))
+	vmwriter.WritePush(getSegment(symtable.KindOf(getCurrent())), symtable.IndexOf(getCurrent()))
 	advance()
 
 	return true
@@ -848,7 +866,8 @@ func checkSubroutineCall() bool {
 		return false
 	}
 
-	var args int = 0
+	var args, additional int = 0, 0
+	var name string
 	subroutine := getCurrent()
 	advance()
 
@@ -863,22 +882,22 @@ func checkSubroutineCall() bool {
 		subroutine := getCurrent()
 
 		//"object" could be a class or a variable (instance of a class)
-		_type := symbtable.TypeOf(object)
-		if checkTokenSlice(_type, []string{"int", "boolean", "char", "void"}) {
+		_type := symtable.TypeOf(object)
+		if checkTokenTypeSliceCustom(_type, []string{"int", "boolean", "char", "void"}) {
 			raiseError("not a valid object type")
 		} else if _type == "" {
 			//it's a class
-			name := object + "." + subroutine
+			name = object + "." + subroutine
 		} else {
 			//it's a instance of a class
 			args++
-			vmwriter.Push(vmwriter.SegmentLookup[_type], symtable.IndexOf(object))
-			name := _type + "." + subroutine
+			vmwriter.WritePush(getSegment(symtable.KindOf(object)), symtable.IndexOf(object))
+			name = _type + "." + subroutine
 		}
 	} else {
-		name := currentClass + "." + subroutine
+		name = currentClass + "." + subroutine
 		args++
-		vmwriter.Push(vmwriter.POINTER, 0)
+		vmwriter.WritePush(vmwriter.POINTER, 0)
 	}
 
 	if !checkOpeningBracket() {
@@ -936,7 +955,9 @@ func main() {
 
 	//arguments
 	args := os.Args
+	//tokens
 	filepath := args[1]
+	//output file
 	target := args[2]
 
 	//open tokens file

@@ -98,23 +98,23 @@ func WriteLabel(label string) {
 	write("label", label, "")
 }
 
-func writeGoto(label string) {
+func WriteGoto(label string) {
 	write("goto", label, "")
 }
 
-func writeIf(label string) {
+func WriteIf(label string) {
 	write("if-goto", label, "")
 }
 
-func writeCall(name string, n int) {
+func WriteCall(name string, n int) {
 	write("call", name, strconv.Itoa(n))
 }
 
-func writeFunction(name string, n int) {
+func WriteFunction(name string, n int) {
 	write("function", name, strconv.Itoa(n))
 }
 
-func writeReturn() {
+func WriteReturn() {
 	write("return", "", "")
 }
 
