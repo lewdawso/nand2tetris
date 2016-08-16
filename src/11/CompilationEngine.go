@@ -28,9 +28,9 @@ var _type string
 var labelCount int
 
 func generateTokenArray(slice []string) {
-
+	re, _ := regexp.Compile(" ")
 	for i := range slice {
-		pair := strings.Split(slice[i], " ")
+		pair := re.Split(slice[i], 2)
 		tokens = append(tokens, pair)
 	}
 	advance()
@@ -687,7 +687,6 @@ func compileExpression() bool {
 		raiseError("compileTerm")
 		return false
 	}
-
 	//(op term)*
 	op := true
 	for op {
@@ -711,13 +710,13 @@ func compileExpression() bool {
 					//hmm
 				case "/":
 					//hmm
-				case "&amp":
+				case "&amp;":
 					vmwriter.WriteArithmetic(vmwriter.AND)
 				case "|":
 					vmwriter.WriteArithmetic(vmwriter.OR)
-				case "&lt":
+				case "&lt;":
 					vmwriter.WriteArithmetic(vmwriter.LT)
-				case "&gt":
+				case "&gt;":
 					vmwriter.WriteArithmetic(vmwriter.GT)
 				case "=":
 					vmwriter.WriteArithmetic(vmwriter.EQ)
@@ -734,7 +733,6 @@ func compileExpression() bool {
 }
 
 func compileTerm() bool {
-
 	//int, string or keyword
 	if checkTokenTypeSlice([]string{"integerConstant", "stringConstant", "keywordConstant"}) {
 		switch current[0] {
@@ -818,6 +816,7 @@ func compileTerm() bool {
 		varName := getCurrent()
 		vmwriter.WritePush(getSegment(symtable.KindOf(varName)), symtable.IndexOf(varName))
 		advance()
+		advance()
 
 		if !compileExpression() {
 			raiseError("compileExpression")
@@ -889,7 +888,7 @@ func checkSubroutineCall() bool {
 			//it's a class
 			name = object + "." + subroutine
 		} else {
-			//it's a instance of a class
+			//it's an instance of a class
 			args++
 			vmwriter.WritePush(getSegment(symtable.KindOf(object)), symtable.IndexOf(object))
 			name = _type + "." + subroutine
@@ -899,6 +898,7 @@ func checkSubroutineCall() bool {
 		args++
 		vmwriter.WritePush(vmwriter.POINTER, 0)
 	}
+	advance()
 
 	if !checkOpeningBracket() {
 		return false
@@ -918,15 +918,12 @@ func checkSubroutineCall() bool {
 }
 
 func compileExpressionList() int {
-
 	var args int
 
 	//first off, check if we have an empty list
 	if checkToken(")") {
 		return 0
 	}
-
-	advance()
 
 	//now we know we have to compile at least one expression
 	if !compileExpression() {
@@ -952,7 +949,6 @@ func compileExpressionList() int {
 }
 
 func main() {
-
 	//arguments
 	args := os.Args
 	//tokens
@@ -974,7 +970,6 @@ func main() {
 
 	//sort op slice
 	sort.Strings(operators)
-
 	//first routine to be called must be compileClass
 	if !compileClass() {
 		raiseError("unable to compile class")

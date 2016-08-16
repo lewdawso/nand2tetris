@@ -35,7 +35,8 @@ const (
 func init() {
 	classSymbolTable = make(map[string]Symbol)
 	subroutineSymbolTable = make(map[string]Symbol)
-	indices := make(map[Kind]int)
+	indices = make(map[Kind]int)
+	KindLookup = make(map[string]Kind)
 
 	indices[STATIC] = 0
 	indices[FIELD] = 0

@@ -119,8 +119,8 @@ func WriteReturn() {
 }
 
 func write(cmd string, arg1 string, arg2 string) {
-	f.WriteString(cmd)
-	f.WriteString(arg1)
-	f.WriteString(arg2)
+	f.WriteString(cmd + " ")
+	f.WriteString(arg1 + " ")
+	f.WriteString(arg2 + " ")
 	f.WriteString("\n")
 }
