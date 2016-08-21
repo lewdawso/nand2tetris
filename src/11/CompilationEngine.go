@@ -36,25 +36,6 @@ func generateTokenArray(slice []string) {
 	advance()
 }
 
-func write(cmd string) {
-	output = append(output, cmd)
-}
-
-func writeOpen(cmd string) {
-	output = append(output, "<"+cmd+">")
-}
-
-func writeClose(cmd string) {
-	output = append(output, "</"+cmd+">")
-}
-
-func writeToken() {
-	//do this better
-	formatted := "<" + current[0] + ">" + " " + current[1] + " " + "</" + current[0] + ">"
-	output = append(output, formatted)
-	advance()
-}
-
 func advance() {
 	current = tokens[0]
 	tokens = tokens[1:]
@@ -279,7 +260,6 @@ func compileClass() bool {
 		return false
 	}
 
-	writeClose("class")
 	return true
 }
 
@@ -480,7 +460,6 @@ func compileStatements() bool {
 			return false
 		}
 	}
-	writeClose("statements")
 	return true
 }
 
@@ -970,21 +949,13 @@ func main() {
 
 	//sort op slice
 	sort.Strings(operators)
+
+	//create output file
+	vmwriter.CreateFile(target)
+
 	//first routine to be called must be compileClass
 	if !compileClass() {
 		raiseError("unable to compile class")
 		debug()
-	}
-
-	//write output to file
-	f, err := os.Create(target)
-	if err != nil {
-		os.Exit(1)
-	}
-	defer f.Close()
-
-	for i := range output {
-		f.WriteString(output[i])
-		f.WriteString("\n")
 	}
 }
