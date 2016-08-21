@@ -38,9 +38,6 @@ const (
 
 func init() {
 
-	//need to get file name from somewhere!
-	f, _ = os.Create("blargh")
-
 	SegmentLookup = make(map[Segment]string)
 	CommandLookup = make(map[Command]string)
 
@@ -62,6 +59,11 @@ func init() {
 	CommandLookup[AND] = "and"
 	CommandLookup[OR] = "or"
 	CommandLookup[NOT] = "not"
+}
+
+//create output .vm file
+func CreateFile(target string) {
+	f, _ = os.Create(target)
 }
 
 func WritePush(s Segment, i int) {
