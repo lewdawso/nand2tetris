@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# Copy files to go source code folder
+
+cp CompilationEngine.go $GOPATH/src/nand2tetris/CompilationEngine
+cp VMWriter.go $GOPATH/src/nand2tetris/VMWriter
+cp SymbolTable.go $GOPATH/src/nand2tetris/SymTable
+
+go install nand2tetris/VMWriter
+go install nand2tetris/SymTable
+go install nand2tetris/CompilationEngine
