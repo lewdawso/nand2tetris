@@ -1,0 +1,29 @@
+#!/bin/bash -xe
+
+#top level driver that sets up and invokes JackTokenizer and CompilationEngine
+
+compile() {
+    FILE="$1"
+    PATHNAME="$(dirname $FILE)"
+    FILENAME="$(basename "$FILE")"
+    TOKENS="$(echo $FILENAME | cut -d "." -f 1)_T.xml"
+    CORE_NAME=$(echo $FILENAME | cut -d "." -f 1)
+
+    node JackTokenizer.js $FILE
+
+    #sed-fu to make parsing of tokensizer output easier
+
+    sed -e 's/[^<]*<\([^>]*\)> \([^<]*\) <[^>]*>/"\1" "\2"/g' -e '/<\/*tokens>/d' "${PATHNAME}/${TOKENS}" > "${PATHNAME}/tokens"
+
+    #invoke compilation engine
+
+    $GOPATH/bin/CompilationEngine "${PATHNAME}/tokens" "$PATHNAME/$CORE_NAME"
+}
+
+#pass a directory containing .jack files -> store these in an array
+DIRECTORY="$1"
+JACK_FILES=( $(find "$DIRECTORY" -name "*.jack") )
+for i in "${JACK_FILES[@]}"
+do
+    compile "$i"
+done
