@@ -360,6 +360,8 @@ func compileSubroutine() bool {
 		}
 	}
 
+	vmwriter.WriteFunction(currentClass+"."+currentSubroutine, symtable.VarCount(symtable.VAR))
+
 	//compile statements
 	if !compileStatements() {
 		raiseError("compileStatements")
@@ -686,9 +688,9 @@ func compileExpression() bool {
 				case "-":
 					vmwriter.WriteArithmetic(vmwriter.SUB)
 				case "*":
-					//hmm
+					vmwriter.WriteCall("Math.multiply", 2)
 				case "/":
-					//hmm
+					vmwriter.WriteCall("Math.divide", 2)
 				case "&amp;":
 					vmwriter.WriteArithmetic(vmwriter.AND)
 				case "|":
@@ -702,6 +704,7 @@ func compileExpression() bool {
 				default:
 					raiseError("unknown operator")
 				}
+				//break out of for loop
 				break
 			}
 			op = false
