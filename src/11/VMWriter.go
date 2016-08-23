@@ -41,7 +41,7 @@ func init() {
 	SegmentLookup = make(map[Segment]string)
 	CommandLookup = make(map[Command]string)
 
-	SegmentLookup[CONST] = "const"
+	SegmentLookup[CONST] = "constant"
 	SegmentLookup[ARG] = "arg"
 	SegmentLookup[LOCAL] = "local"
 	SegmentLookup[STATIC] = "static"

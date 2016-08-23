@@ -17,7 +17,7 @@ compile() {
 
     #invoke compilation engine
 
-    $GOPATH/bin/CompilationEngine "${PATHNAME}/tokens" "$PATHNAME/$CORE_NAME"
+    $GOPATH/bin/CompilationEngine "${PATHNAME}/tokens" "$PATHNAME/$CORE_NAME.vm"
 }
 
 #pass a directory containing .jack files -> store these in an array
