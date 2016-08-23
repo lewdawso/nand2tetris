@@ -667,23 +667,23 @@ call Output.println 0
 push constant 0 
 return   
 function Main.double 3 
-push arg 0 
+push argument 0 
 push constant 2 
 call Math.multiply 2 
 return   
 function Main.fill 3 
 label LABEL2  
-push arg 2 
+push argument 2 
 push constant 0 
 gt   
 not   
 if-goto LABEL3  
-push arg 2 
+push argument 2 
 push constant 1 
 sub   
-pop arg 2 
-push arg 1 
-push arg 2 
+pop argument 2 
+push argument 1 
+push argument 2 
 add   
 push constant 3 
 call Array.new 1 
