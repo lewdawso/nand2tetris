@@ -307,11 +307,15 @@ func compileClassVarDec() bool {
 
 func compileSubroutine() bool {
 
+	//need to log whether we're dealing with a method or a function
+	method := false
+
 	symtable.StartSubroutine()
 
 	//first argument of a method is the object itself
 	if getCurrent() == "method" {
 		symtable.Define("this", currentClass, symtable.ARG)
+		method = true
 	}
 
 	advance()
@@ -361,6 +365,11 @@ func compileSubroutine() bool {
 	}
 
 	vmwriter.WriteFunction(currentClass+"."+currentSubroutine, symtable.VarCount(symtable.VAR))
+	//if this is a method, need to set the "this" pointer
+	if method {
+		vmwriter.WritePush(vmwriter.ARG, 0)
+		vmwriter.WritePop(vmwriter.POINTER, 0)
+	}
 
 	//compile statements
 	if !compileStatements() {
@@ -573,6 +582,7 @@ func compileIf() bool {
 	vmwriter.WriteLabel(start)
 
 	if checkToken("else") {
+		advance()
 		if !checkOpeningBrace() {
 			return false
 		}
@@ -737,6 +747,8 @@ func compileTerm() bool {
 				vmwriter.WritePush(vmwriter.CONST, 1)
 				vmwriter.WriteArithmetic(vmwriter.NOT)
 			} else if current[1] == "false" {
+				vmwriter.WritePush(vmwriter.CONST, 0)
+			} else if current[1] == "null" {
 				vmwriter.WritePush(vmwriter.CONST, 0)
 			} else {
 				raiseError("invalid keywordConstant value")
