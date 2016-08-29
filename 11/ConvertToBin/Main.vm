@@ -12,7 +12,8 @@ call Main.convert 1
 push constant 0 
 return   
 function Main.convert 5 
-push local -1 
+push constant 1 
+not   
 pop local 4 
 label LABEL0  
 push local 4 
@@ -59,7 +60,7 @@ call Memory.poke 2
 label LABEL5  
 goto LABEL3  
 label LABEL2  
-push local -1 
+push constant 0 
 pop local 4 
 label LABEL3  
 goto LABEL0  
