@@ -33,7 +33,7 @@ keywords =
 symbols = ["{", "}", "(", ")", "[", "]", ".", ",", ";", "+", "-", "*", "/", "&", "|", "<", ">", "=", "~"];
 
 function isStaticComment(command) {
-    if ((command[0] == "/" && command[1] == "/") || (command[0] == "/" && command[1] == "*") || command[1] == "*" || (command[1] == "*" && command[2] == "/") || command[offset+1] == "*") {
+    if ((command[0] == "/" && command[1] == "/") || (command[0] == "/" && command[1] == "*") || command[1] == "*" || (command[1] == "*" && command[2] == "/") || command[offset+1] == "*" || command[offset] == "*") {
         return true;
     };
     return false;
@@ -51,6 +51,11 @@ function stripComment(command) {
     for (var i=0; i<command.length; i++) {
         if (command[i] == "/" && (command[i+1] == "/" || command[i+1] == "*")) {
             offset = i;
+            j = 2;
+            while(command[i+j] == "*") {
+                j += 1;
+                offset += 1;
+            }
             return command.substr(0, i-1);
         };
     };
@@ -67,7 +72,7 @@ function parse() {
     };
     //split commands into individual keywords
     for (var j=0; j<trimmed.length; j++) {
-        trimmed[j] = trimmed[j].split(/(".*")|([\[\]{()};.,~ ])/);
+        trimmed[j] = trimmed[j].split(/(".*")|([\[\]{()};.,\-~ ])/);
     };
     for (var i=0; i<trimmed.length; i++) {
         command = trimmed[i]; 
