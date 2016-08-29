@@ -726,7 +726,7 @@ func compileExpression() bool {
 
 func compileTerm() bool {
 	//int, string or keyword
-	if checkTokenTypeSlice([]string{"integerConstant", "stringConstant", "keywordConstant"}) {
+	if checkTokenTypeSlice([]string{"integerConstant", "stringConstant", "keyword"}) {
 		switch current[0] {
 		case "integerConstant":
 			vmwriter.WritePush(vmwriter.CONST, getCurrentInt())
@@ -742,7 +742,7 @@ func compileTerm() bool {
 				//which is left on the stack after the call to String.new
 				vmwriter.WriteCall("String.appendChar", 2)
 			}
-		case "keywordConstant":
+		case "keyword":
 			if current[1] == "true" {
 				vmwriter.WritePush(vmwriter.CONST, 1)
 				vmwriter.WriteArithmetic(vmwriter.NOT)
@@ -751,7 +751,7 @@ func compileTerm() bool {
 			} else if current[1] == "null" {
 				vmwriter.WritePush(vmwriter.CONST, 0)
 			} else {
-				raiseError("invalid keywordConstant value")
+				raiseError("invalid keyword value")
 				return false
 			}
 		default:
