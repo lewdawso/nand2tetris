@@ -51,6 +51,8 @@ func init() {
 
 func StartSubroutine() {
 	subroutineSymbolTable = make(map[string]Symbol)
+	indices[ARG] = 0
+	indices[VAR] = 0
 }
 
 func Define(name string, _type string, kind Kind) {
