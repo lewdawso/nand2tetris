@@ -758,6 +758,8 @@ func compileTerm() bool {
 				vmwriter.WritePush(vmwriter.CONST, 0)
 			} else if current[1] == "null" {
 				vmwriter.WritePush(vmwriter.CONST, 0)
+			} else if current[1] == "this" {
+				vmwriter.WritePush(vmwriter.POINTER, 0)
 			} else {
 				raiseError("invalid keyword value")
 				return false
@@ -895,12 +897,12 @@ func checkSubroutineCall() bool {
 			vmwriter.WritePush(getSegment(symtable.KindOf(object)), symtable.IndexOf(object))
 			name = _type + "." + subroutine
 		}
+		advance()
 	} else {
 		name = currentClass + "." + subroutine
 		args++
 		vmwriter.WritePush(vmwriter.POINTER, 0)
 	}
-	advance()
 
 	if !checkOpeningBracket() {
 		return false
