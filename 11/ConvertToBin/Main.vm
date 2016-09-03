@@ -12,7 +12,7 @@ call Main.convert 1
 push constant 0 
 return   
 function Main.convert 3 
-push constant 1 
+push constant 0 
 not   
 pop local 2 
 label LABEL0  
