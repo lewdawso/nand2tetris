@@ -318,6 +318,14 @@ func compileSubroutine() bool {
 		method = true
 	}
 
+	if getCurrent() == "constructor" {
+		//push number of fields in the object as an argument for Memory.alloc
+		vmwriter.WritePush(vmwriter.CONST, symtable.VarCount(symtable.FIELD))
+		vmwriter.WriteCall("Memory.alloc", 1)
+		//set THIS
+		vmwriter.WritePop(vmwriter.POINTER, 0)
+	}
+
 	advance()
 
 	//check return type
@@ -744,7 +752,7 @@ func compileTerm() bool {
 			}
 		case "keyword":
 			if current[1] == "true" {
-				vmwriter.WritePush(vmwriter.CONST, 1)
+				vmwriter.WritePush(vmwriter.CONST, 0)
 				vmwriter.WriteArithmetic(vmwriter.NOT)
 			} else if current[1] == "false" {
 				vmwriter.WritePush(vmwriter.CONST, 0)
