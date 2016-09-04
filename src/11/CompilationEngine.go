@@ -307,8 +307,9 @@ func compileClassVarDec() bool {
 
 func compileSubroutine() bool {
 
-	//need to log whether we're dealing with a method or a function
+	//need to log whether we're dealing with a method, function or a constructor
 	method := false
+	constructor := false
 
 	symtable.StartSubroutine()
 
@@ -316,14 +317,8 @@ func compileSubroutine() bool {
 	if getCurrent() == "method" {
 		symtable.Define("this", currentClass, symtable.ARG)
 		method = true
-	}
-
-	if getCurrent() == "constructor" {
-		//push number of fields in the object as an argument for Memory.alloc
-		vmwriter.WritePush(vmwriter.CONST, symtable.VarCount(symtable.FIELD))
-		vmwriter.WriteCall("Memory.alloc", 1)
-		//set THIS
-		vmwriter.WritePop(vmwriter.POINTER, 0)
+	} else if getCurrent() == "constructor" {
+		constructor = true
 	}
 
 	advance()
@@ -376,6 +371,15 @@ func compileSubroutine() bool {
 	//if this is a method, need to set the "this" pointer
 	if method {
 		vmwriter.WritePush(vmwriter.ARG, 0)
+		vmwriter.WritePop(vmwriter.POINTER, 0)
+	}
+
+	//if this is a constructor, need to allocate some memory for the object
+	if constructor {
+		//push number of fields in the object as an argument for Memory.alloc
+		vmwriter.WritePush(vmwriter.CONST, symtable.VarCount(symtable.FIELD))
+		vmwriter.WriteCall("Memory.alloc", 1)
+		//set THIS
 		vmwriter.WritePop(vmwriter.POINTER, 0)
 	}
 
